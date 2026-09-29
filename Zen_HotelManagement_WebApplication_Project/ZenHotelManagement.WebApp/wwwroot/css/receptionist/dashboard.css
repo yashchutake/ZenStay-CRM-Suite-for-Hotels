@@ -1,0 +1,406 @@
+/* 
+ * Receptionist Dashboard Styles
+ * Specific styles for the Receptionist Dashboard view
+ */
+
+/* Dashboard Container */
+.receptionist-dashboard .dashboard-container {
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.receptionist-dashboard .page-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.receptionist-dashboard .stats-card {
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.receptionist-dashboard .stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.receptionist-dashboard .stats-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.receptionist-dashboard .stats-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.receptionist-dashboard .stats-section {
+    margin-bottom: 0.75rem;
+}
+
+.receptionist-dashboard .stats-section .card-body {
+    padding: 0.75rem;
+}
+
+.receptionist-dashboard .stats-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.receptionist-dashboard .stats-icon i {
+    transition: transform 0.3s ease;
+}
+
+.receptionist-dashboard .stats-card:hover .stats-icon i {
+    transform: scale(1.1);
+}
+
+/* Widget Sections */
+.receptionist-dashboard .widgets-row {
+    flex: 1;
+    display: flex;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.receptionist-dashboard .left-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.receptionist-dashboard .right-column {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.receptionist-dashboard .widget-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.receptionist-dashboard .widget-header {
+    padding: 0.5rem 1rem 0.375rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.receptionist-dashboard .widget-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    color: #475569;
+    margin: 0;
+    letter-spacing: 0.025em;
+}
+
+.receptionist-dashboard .widget-body {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Quick Actions Widget - Reduced size */
+.receptionist-dashboard .quick-actions-widget {
+    flex: 0 0 auto;
+}
+
+.receptionist-dashboard .quick-actions-widget .widget-body {
+    padding: 0.75rem 1rem;
+}
+
+.receptionist-dashboard .quick-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.receptionist-dashboard .action-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    cursor: pointer;
+    height: 2rem;
+}
+
+.receptionist-dashboard .action-btn.primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+}
+
+.receptionist-dashboard .action-btn.secondary {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+}
+
+.receptionist-dashboard .action-btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Today's Arrivals Widget */
+.receptionist-dashboard .arrivals-widget {
+    flex: 1;
+    min-height: 0;
+}
+
+.receptionist-dashboard .arrivals-widget .widget-body {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.receptionist-dashboard .table-container {
+    flex: 1;
+    overflow: hidden;
+    height: 190px; /* Compact height: Header (30px) + 5 rows (32px each) = 190px */
+    border: 1px solid #e2e8f0;
+}
+
+.receptionist-dashboard .table {
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.receptionist-dashboard .table th {
+    border: none;
+    font-weight: 600;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.4rem 0.7rem;
+    background: #f8fafc;
+    height: 30px;
+    line-height: 1;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    color: #475569;
+}
+
+.receptionist-dashboard .table th:first-child {
+    border-top-left-radius: 0.5rem;
+}
+
+.receptionist-dashboard .table th:last-child {
+    border-top-right-radius: 0.5rem;
+}
+
+.receptionist-dashboard .table td {
+    padding: 0.5rem 0.7rem;
+    vertical-align: middle;
+    height: 36px;
+    line-height: 1.2;
+    border-bottom: 1px solid #f1f5f9;
+    background: white;
+    transition: background-color 0.15s ease;
+}
+
+.receptionist-dashboard .table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+.receptionist-dashboard .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.receptionist-dashboard .table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+
+.receptionist-dashboard .table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
+}
+
+/* Optimized column width distribution */
+.receptionist-dashboard .table th:nth-child(1),
+.receptionist-dashboard .table td:nth-child(1) {
+    width: 35%;
+    text-align: left;
+    font-weight: 600;
+    color: #6366f1;
+    font-size: 0.75rem;
+    padding-left: 1rem;
+}
+
+.receptionist-dashboard .table th:nth-child(2),
+.receptionist-dashboard .table td:nth-child(2) {
+    width: 20%;
+    font-weight: 500;
+    color: #475569;
+    padding-left: 1rem;
+}
+
+.receptionist-dashboard .table th:nth-child(3),
+.receptionist-dashboard .table td:nth-child(3) {
+    width: 20%;
+    text-align: center;
+}
+
+.receptionist-dashboard .table th:nth-child(4),
+.receptionist-dashboard .table td:nth-child(4) {
+    width: 25%;
+    text-align: center;
+}
+
+.receptionist-dashboard .badge {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6rem;
+    line-height: 1;
+    border-radius: 5px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+}
+
+.receptionist-dashboard .badge.bg-success {
+    background: #10b981 !important;
+    color: white;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+.receptionist-dashboard .badge.bg-primary {
+    background: #6366f1 !important;
+    color: white;
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+}
+
+.receptionist-dashboard .badge.bg-warning {
+    background: #f59e0b !important;
+    color: white;
+    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+}
+
+.receptionist-dashboard .widget-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 0.15rem 1rem;
+    background: #f8fafc;
+    text-align: right;
+    border-radius: 0 0 0.75rem 0.75rem;
+    min-height: auto;
+}
+
+.receptionist-dashboard .widget-footer .btn-link {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.15rem 0.35rem;
+    text-decoration: none;
+    color: #6366f1;
+    border-radius: 0.25rem;
+    transition: all 0.15s ease;
+    letter-spacing: 0.3px;
+}
+
+.receptionist-dashboard .widget-footer .btn-link:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #4f46e5;
+    text-decoration: none;
+}
+
+/* Chart Widget */
+.receptionist-dashboard .chart-widget {
+    flex: 1;
+    min-height: 0;
+}
+
+.receptionist-dashboard .chart-container {
+    flex: 1;
+    position: relative;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Chart Styling */
+.receptionist-dashboard .chart-container canvas {
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .receptionist-dashboard .widgets-row {
+        flex-direction: column;
+    }    .receptionist-dashboard .right-column {
+        flex: 1;
+    }
+
+    .receptionist-dashboard .chart-container {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .receptionist-dashboard .dashboard-container {
+        padding: 0.5rem;
+        height: auto;
+        min-height: calc(100vh - 100px);
+    }
+
+    .receptionist-dashboard .stats-value {
+        font-size: 1.4rem;
+    }
+
+    .receptionist-dashboard .quick-actions-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .receptionist-dashboard .action-btn {
+        width: 100%;
+    }    .receptionist-dashboard .left-column,
+    .receptionist-dashboard .widgets-row {
+        gap: 0.5rem;
+    }
+
+    .receptionist-dashboard .chart-container {
+        min-height: 200px;
+    }
+}
+
+/* Additional padding adjustment for main content */
+.p-4 {
+    padding: 1rem !important;
+}

@@ -1,0 +1,1081 @@
+@model ZenHotelManagement.WebApp.Models.ViewModel.CustomerCreateViewModel
+
+@{
+   
+    ViewData["ActiveTab"] = "Customers";
+}
+
+<script src="~/js/notification.js"></script>
+
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <div class="avatar-lg bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+            <i class="bi bi-person-plus-fill text-primary fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0">Add New Customer</h2>
+            <small class="text-muted">Create a new customer profile</small>
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Customer")" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>
+        Back
+    </a>
+</div>
+
+<!-- Alerts Section -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Validation Summary Alert (Initially Hidden) -->
+<div class="alert alert-danger alert-dismissible fade" role="alert" id="validationSummaryAlert" style="display: none;">
+    <h6 class="alert-heading">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Please fix the following errors:
+    </h6>
+    <ul id="validationErrorsList" class="mb-0">
+        <!-- Validation errors will be populated here -->
+    </ul>
+    <button type="button" class="btn-close" onclick="hideValidationSummary()"></button>
+</div>
+
+<form asp-action="Create" method="post" class="needs-validation validation-enhanced" novalidate>
+    @Html.AntiForgeryToken()
+      <!-- Guest Personal Information Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header border-0 bg-white">
+            <h5 class="mb-0 text-muted">
+                <i class="bi bi-person-fill me-2"></i>Guest Personal Information
+            </h5>
+            <small class="text-muted">Primary guest details and identification</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">                <!-- Name and Gender in first row -->
+                <div class="col-md-8">
+                    <div class="form-floating">
+                        <input asp-for="Name" class="form-control" placeholder="Full Name" required 
+                               pattern="[A-Za-z\s]{2,50}" 
+                               minlength="2" 
+                               maxlength="50" 
+                               title="Name should only contain letters and spaces (2-50 characters)" />
+                        <label asp-for="Name">Full Name <span class="text-danger">*</span></label>                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please enter a valid name (2-50 characters, letters only)</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select asp-for="Gender" class="form-select" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <label asp-for="Gender">Gender <span class="text-danger">*</span></label>                        <span asp-validation-for="Gender" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please select a gender</div>
+                    </div>
+                </div>
+                  <!-- Contact Information -->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="MobileNo" class="form-control" placeholder="Mobile Number" required 
+                               pattern="^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$" 
+                               minlength="10" 
+                               maxlength="15" 
+                               title="Enter a valid 10-digit Indian mobile number" />
+                        <label asp-for="MobileNo">Mobile Number <span class="text-danger">*</span></label>                        <span asp-validation-for="MobileNo" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please enter a valid 10-digit mobile number</div>
+                        <div class="form-text">Format: +91XXXXXXXXXX or 10-digit number</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="Country" class="form-control" placeholder="Country" 
+                               pattern="[A-Za-z\s]{2,50}" 
+                               maxlength="50" 
+                               title="Country name should only contain letters" />
+                        <label asp-for="Country">Country</label>                        <span asp-validation-for="Country" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please enter a valid country name</div>
+                    </div>
+                </div>
+                  <!-- Identification Details -->
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select asp-for="IdType" class="form-select" required id="idTypeSelect">                            <option value="">Select ID Type</option>
+                            <option value="Aadhar Card">Aadhar Card</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Driving License">Driving License</option>
+                            <option value="Voter ID">Voter ID</option>
+                            <option value="PAN Card">PAN Card</option>
+                        </select>
+                        <label asp-for="IdType">ID Type <span class="text-danger">*</span></label>                        <span asp-validation-for="IdType" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please select an ID type</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating position-relative">
+                        <input asp-for="CustomerId" class="form-control" placeholder="ID Number" required 
+                               id="customerIdInput" 
+                               title="Enter the ID number according to selected ID type" />
+                        <label asp-for="CustomerId">ID Number <span class="text-danger">*</span></label>                        <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        <div class="invalid-feedback">Please enter a valid ID number</div>
+                        <div class="form-text" id="idFormatExample">
+                            Select ID type to see format example
+                        </div>
+                    </div>
+                </div>
+                  <!-- Address -->
+                <div class="col-12">
+                    <div class="form-floating">
+                        <textarea asp-for="Address" class="form-control" placeholder="Full Address" 
+                                  style="height: 100px" 
+                                  maxlength="500" 
+                                  title="Enter complete address (optional, max 500 characters)"></textarea>
+                        <label asp-for="Address">Full Address (Optional)</label>                        <span asp-validation-for="Address" class="text-danger small"></span>
+                        <div class="invalid-feedback">Address is too long (max 500 characters)</div>
+                        <div class="form-text">
+                            <span id="addressCharCount">0</span>/500 characters
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Room Reservations Card -->
+    <div class="card shadow-sm mb-4">        <div class="card-header border-0 bg-white">
+            <div>
+                <h5 class="mb-0 text-muted">
+                    <i class="bi bi-house-door-fill me-2"></i>Room Reservations
+                </h5>
+                <small class="text-muted">Add room bookings for the guest stay</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="roomBookingsContainer">
+                @for (int i = 0; i < Model.RoomBookings.Count; i++)
+                            {
+                                <div class="room-booking-item border rounded p-3 mb-3" data-index="@i">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0 text-primary">Room Booking #<span class="booking-number">@(i + 1)</span></h6>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-booking" @(i == 0 ? "style=display:none" : "")>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="row">                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Room <span class="text-danger">*</span></label>
+                                            <select asp-for="RoomBookings[i].RoomId" class="form-select room-select" required>
+                                                <option value="">Select a room</option>
+                                                @foreach (var room in Model.AvailableRooms)
+                                                {
+                                                    <option value="@room.RoomId" data-capacity="@room.RoomCapacity" data-cost="@room.CostPerNight" data-type="@room.RoomType">
+                                                        @room.RoomNo - @room.RoomType (@(room.IsAc ? "AC" : "Non-AC")) - ₹@room.CostPerNight/night (Capacity: @room.RoomCapacity)
+                                                    </option>
+                                                }
+                                            </select>                                            <span asp-validation-for="RoomBookings[i].RoomId" class="text-danger"></span>
+                                            <div class="invalid-feedback">Please select a room</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Number of Guests <span class="text-danger">*</span></label>
+                                            <input asp-for="RoomBookings[i].NumberOfGuests" type="number" class="form-control guests-input" 
+                                                   min="1" max="10" required 
+                                                   title="Enter number of guests (1-10)" />                                            <span asp-validation-for="RoomBookings[i].NumberOfGuests" class="text-danger"></span>
+                                            <div class="invalid-feedback">Please enter valid number of guests (1-10)</div>
+                                            <div class="form-text">Maximum capacity will be validated based on room selection</div>
+                                        </div>
+                                    </div>
+                                      @if (i == 0)
+                                    {
+                                        <!-- Primary booking always shows date inputs -->                                        <div class="row">                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Check-in Date & Time</label>                                                <input asp-for="RoomBookings[i].CheckInDate" type="datetime-local" 
+                                                       class="form-control checkin-input primary-checkin" 
+                                                       title="Select check-in date and time" />                                                <span asp-validation-for="RoomBookings[i].CheckInDate" class="text-danger"></span>
+                                                <div class="form-text">Select check-in date and time</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Check-out Date & Time</label>
+                                                <div class="input-group">
+                                                    <input asp-for="RoomBookings[i].CheckOutDate" type="datetime-local" 
+                                                           class="form-control checkout-input primary-checkout" 
+                                                           title="Select check-out date and time" />
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="setTBD(this)" 
+                                                            title="Set as To Be Determined">
+                                                        <i class="bi bi-question-circle me-1"></i>TBD
+                                                    </button>
+                                                </div>                                                <span asp-validation-for="RoomBookings[i].CheckOutDate" class="text-danger"></span>
+                                                <div class="invalid-feedback">Check-out time must be after check-in time</div>
+                                                <div class="form-text">Select checkout time, or click "TBD" for undetermined checkout</div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {                                        <!-- Hidden inputs for additional bookings - will be synced from primary -->
+                                        <input asp-for="RoomBookings[i].CheckInDate" type="hidden" class="checkin-input additional-checkin" />
+                                        <input asp-for="RoomBookings[i].CheckOutDate" type="hidden" class="checkout-input additional-checkout" />
+                                    }<div class="row">                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Amount Paid (Advance Payment) <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input asp-for="RoomBookings[i].AmountPaid" type="number" step="0.01" 
+                                                       class="form-control amount-paid-input" 
+                                                       min="0" required 
+                                                       title="Enter advance payment amount" />
+                                            </div>                                            <span asp-validation-for="RoomBookings[i].AmountPaid" class="text-danger"></span>
+                                            <div class="invalid-feedback">Please enter a valid advance payment amount</div>
+                                            <div class="form-text">
+                                                Enter the advance payment amount. Remaining balance will be collected at checkout.
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Hidden field for total amount calculation -->
+                                        <input asp-for="RoomBookings[i].Amount" type="hidden" class="amount-input" />
+                                    </div>
+                                    
+                                    <!-- Remove booking date and status fields as they are now automated -->
+                                </div>
+                            }                        </div>                        <div id="noRoomBookings" class="text-center text-muted py-4" style="display: none;">
+                            <i class="bi bi-house display-4"></i>
+                            <p class="mt-2">No room bookings added yet. Click "Add Room Booking" to get started.</p>
+                        </div>
+                          <!-- Add Room Booking Button -->
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn btn-primary" id="addRoomBooking">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Add Room Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cab Booking Section -->
+                <div class="row">
+                    <div class="col-12">                        <div class="card shadow mb-4">                            <div class="card-header bg-light border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-0 text-dark">
+                                            <i class="bi bi-car-front-fill me-2 text-primary"></i>
+                                            Transportation Service
+                                        </h5>
+                                        <small class="text-dark">Optional cab booking for guest transportation</small>
+                                    </div>                                    <div class="form-check form-switch">
+                                        <input asp-for="IncludeCabBooking" class="form-check-input" type="checkbox" id="cabBookingSwitch" />
+                                        <label class="form-check-label text-dark" for="cabBookingSwitch">
+                                            Include Service
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>                            <div class="card-body" id="cabBookingDetails" style="display: none;">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Automated Cab Booking:</strong> Cab driver and fare will be automatically assigned when you create the booking.
+                                </div>                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label asp-for="CabPickUpDateTime" class="form-label">Pick-up Date & Time <span class="text-danger cab-required">*</span></label>                                        <input asp-for="CabPickUpDateTime" type="datetime-local" 
+                                               class="form-control cab-required-field" 
+                                               title="Select pick-up date and time" /><span asp-validation-for="CabPickUpDateTime" class="text-danger"></span>
+                                        <div class="invalid-feedback">Please select a valid pick-up date and time</div>
+                                        <div class="form-text">Select pick-up date and time</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="CabPickUpLocation" class="form-label">Pick-up Location <span class="text-danger cab-required">*</span></label>
+                                        <input asp-for="CabPickUpLocation" class="form-control cab-required-field" 
+                                               placeholder="Enter pick-up location" 
+                                               maxlength="200" 
+                                               title="Enter the pick-up location" />                                        <span asp-validation-for="CabPickUpLocation" class="text-danger"></span>
+                                        <div class="invalid-feedback">Please enter a valid pick-up location</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="CabDropOffLocation" class="form-label">Drop-off Location <span class="text-danger cab-required">*</span></label>
+                                        <input asp-for="CabDropOffLocation" class="form-control cab-required-field" 
+                                               placeholder="Enter drop-off location" 
+                                               maxlength="200" 
+                                               title="Enter the drop-off location" />                                        <span asp-validation-for="CabDropOffLocation" class="text-danger"></span>
+                                        <div class="invalid-feedback">Please enter a valid drop-off location</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="row">                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="@Url.Action("Index", "Customer")" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" onclick="return confirmCreateCustomer()">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Create Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+.avatar-lg {
+    width: 60px;
+    height: 60px;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.form-floating > label {
+    font-weight: 500;
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 0.75rem;
+    border: none;
+}
+
+.booking-form {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Enhanced validation styles */
+.validation-enhanced .form-control:focus, 
+.validation-enhanced .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+.validation-enhanced .is-invalid:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    border-color: #dc3545;
+}
+
+.validation-enhanced .is-valid:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    border-color: #198754;
+}
+
+/* Field groups with enhanced spacing */
+.form-floating {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Custom field validation indicators */
+.field-validation-wrapper {
+    position: relative;
+}
+
+.field-validation-wrapper .validation-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+}
+
+.validation-icon.success {
+    color: #198754;
+}
+
+.validation-icon.error {
+    color: #dc3545;
+}
+
+/* Progress indicators */
+.progress-enhanced {
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: #e9ecef;
+}
+
+.progress-enhanced .progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Room booking cards */
+.room-booking-item {
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.room-booking-item:hover {
+    border-color: #86b7fe;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+}
+
+.room-booking-item.has-errors {
+    border-color: #dc3545;
+    background-color: #fdf2f2;
+}
+
+.room-booking-item.is-valid {
+    border-color: #198754;
+    background-color: #f8fff9;
+}
+
+/* Cab booking section */
+.cab-booking-section {
+    transition: all 0.3s ease;
+}
+
+.cab-booking-section.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ID format example styling */
+#idFormatExample {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Character count styling */
+.char-count-display {
+    font-size: 0.75rem;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+/* Responsive enhancements */
+@@media (max-width: 768px) {
+    .form-floating > label {
+        font-size: 0.875rem;
+    }
+    
+    .room-booking-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .col-md-6, .col-md-8, .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation enhancements */
+@@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slideInUp 0.3s ease-out;
+}
+
+/* Loading states */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0d6efd;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+</style><partial name="_ValidationScriptsPartial" />    <script>          // Function to set checkout as TBD (To Be Determined)
+        function setTBD(button) {
+            const inputGroup = button.closest('.input-group');
+            const input = inputGroup ? inputGroup.querySelector('input[type="datetime-local"]') : 
+                         button.parentElement.querySelector('input[type="datetime-local"]');
+            
+            if (input) {
+                input.value = '';
+                input.placeholder = 'To Be Determined';
+                
+                // Visual feedback
+                button.classList.add('btn-warning');
+                button.classList.remove('btn-outline-secondary');
+                setTimeout(() => {
+                    button.classList.remove('btn-warning');
+                    button.classList.add('btn-outline-secondary');
+                }, 1000);
+                
+                // Trigger change event to update calculations
+                input.dispatchEvent(new Event('change'));
+                
+                // If this is primary booking checkout, sync to additional bookings
+                if (input.classList.contains('primary-checkout')) {
+                    syncDatesFromPrimary();
+                }
+            }
+        }
+        
+        let bookingIndex = @Model.RoomBookings.Count;
+        const availableRooms = @Html.Raw(Json.Serialize(Model.AvailableRooms.Select(r => new { 
+            roomId = r.RoomId, 
+            roomNo = r.RoomNo, 
+            roomType = r.RoomType, 
+            isAc = r.IsAc, 
+            costPerNight = r.CostPerNight, 
+            roomCapacity = r.RoomCapacity 
+        })));        // Add new room booking
+        document.getElementById('addRoomBooking').addEventListener('click', function() {
+            const container = document.getElementById('roomBookingsContainer');
+            const newBooking = createRoomBookingHtml(bookingIndex);
+            container.insertAdjacentHTML('beforeend', newBooking);
+            
+            // Initialize event listeners for the new booking
+            initializeBookingEvents(bookingIndex);
+            
+            bookingIndex++;
+            updateBookingNumbers();
+            toggleNoBookingsMessage();
+              // Update room options in all dropdowns after adding new booking
+            updateRoomOptions();
+            
+            // Sync dates from primary booking to the new additional booking
+            syncDatesFromPrimary();
+        });
+
+        // Remove room booking
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-booking')) {
+                const bookingItem = e.target.closest('.room-booking-item');
+                bookingItem.remove();
+                updateBookingNumbers();
+                toggleNoBookingsMessage();
+                
+                // Update room options in all dropdowns after removing booking
+                updateRoomOptions();
+            }
+        });
+
+        // Helper function to get already selected room IDs
+        function getSelectedRoomIds() {
+            const selectedIds = [];
+            document.querySelectorAll('.room-select').forEach(select => {
+                if (select.value) {
+                    selectedIds.push(select.value);
+                }
+            });
+            return selectedIds;
+        }
+
+        // Function to update room options in all dropdowns when a room is selected/deselected
+        function updateRoomOptions() {
+            const selectedRoomIds = getSelectedRoomIds();
+            
+            document.querySelectorAll('.room-select').forEach(select => {
+                const currentValue = select.value;
+                
+                // Clear all options except the "Select a room" option
+                select.innerHTML = '<option value="">Select a room</option>';
+                
+                // Add available rooms (excluding already selected ones, but include current selection)
+                availableRooms.forEach(room => {
+                    if (!selectedRoomIds.includes(room.roomId.toString()) || room.roomId.toString() === currentValue) {
+                        const option = document.createElement('option');
+                        option.value = room.roomId;
+                        option.setAttribute('data-capacity', room.roomCapacity);
+                        option.setAttribute('data-cost', room.costPerNight);
+                        option.setAttribute('data-type', room.roomType);
+                        option.textContent = `${room.roomNo} - ${room.roomType} (${room.isAc ? 'AC' : 'Non-AC'}) - ₹${room.costPerNight}/night (Capacity: ${room.roomCapacity})`;
+                        
+                        if (room.roomId.toString() === currentValue) {
+                            option.selected = true;
+                        }
+                        
+                        select.appendChild(option);
+                    }
+                });
+            });
+        }        // Simplified date sync - no validation or complex logic
+        function syncDatesFromPrimary() {
+            const primaryBooking = document.querySelector('[data-index="0"]');
+            if (!primaryBooking) return;
+            
+            const primaryCheckin = primaryBooking.querySelector('.checkin-input');
+            const primaryCheckout = primaryBooking.querySelector('.checkout-input');
+            
+            if (!primaryCheckin) return;
+            
+            // Simply copy dates to additional bookings without validation
+            document.querySelectorAll('.room-booking-item[data-index]:not([data-index="0"])').forEach(booking => {
+                const hiddenCheckinInput = booking.querySelector('.additional-checkin');
+                const hiddenCheckoutInput = booking.querySelector('.additional-checkout');
+                
+                if (hiddenCheckinInput && primaryCheckin.value) {
+                    hiddenCheckinInput.value = primaryCheckin.value;
+                }
+                if (hiddenCheckoutInput && primaryCheckout && primaryCheckout.value) {
+                    hiddenCheckoutInput.value = primaryCheckout.value;
+                }
+            });
+        }// Create room booking HTML
+        function createRoomBookingHtml(index) {
+            // Get already selected room IDs to exclude them
+            const selectedRoomIds = getSelectedRoomIds();
+            
+            const roomOptions = availableRooms
+                .filter(room => !selectedRoomIds.includes(room.roomId.toString()))
+                .map(room => 
+                    `<option value="${room.roomId}" data-capacity="${room.roomCapacity}" data-cost="${room.costPerNight}" data-type="${room.roomType}">
+                        ${room.roomNo} - ${room.roomType} (${room.isAc ? 'AC' : 'Non-AC'}) - ₹${room.costPerNight}/night (Capacity: ${room.roomCapacity})
+                    </option>`
+                ).join('');            const today = new Date();
+            const checkinDefault = '';  // No default date
+
+            const isPrimaryBooking = index === 0;
+            
+            // For additional bookings, leave dates empty initially
+            let checkinDateValue = '';
+            let checkoutDateValue = '';
+
+            return `
+                <div class="room-booking-item border rounded p-3 mb-3" data-index="${index}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0 text-primary">
+                            ${isPrimaryBooking ? 'Primary' : 'Additional'} Room Booking #<span class="booking-number">${index + 1}</span>
+                        </h6>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-booking">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Room <span class="text-danger">*</span></label>
+                            <select name="RoomBookings[${index}].RoomId" class="form-select room-select" required>
+                                <option value="">Select a room</option>
+                                ${roomOptions}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Number of Guests <span class="text-danger">*</span></label>
+                            <input name="RoomBookings[${index}].NumberOfGuests" type="number" class="form-control guests-input" min="1" max="10" value="1" required />
+                        </div>
+                    </div>                      ${isPrimaryBooking ? `                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Check-in Date & Time</label>
+                            <input name="RoomBookings[${index}].CheckInDate" type="datetime-local" class="form-control checkin-input" value="${checkinDateValue}" />
+                            <div class="form-text">Select check-in date and time</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Check-out Date & Time</label>
+                            <div class="input-group">
+                                <input name="RoomBookings[${index}].CheckOutDate" type="datetime-local" class="form-control checkout-input" value="${checkoutDateValue}" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="setTBD(this)">
+                                    <i class="bi bi-question-circle me-1"></i>TBD
+                                </button>
+                            </div>
+                            <div class="form-text">Select checkout time, or click "TBD" for undetermined checkout</div>
+                        </div>
+                    </div>` : `
+                    <!-- Hidden inputs for additional bookings - will be synced from primary -->
+                    <input name="RoomBookings[${index}].CheckInDate" type="hidden" class="additional-checkin" value="${checkinDateValue}" />
+                    <input name="RoomBookings[${index}].CheckOutDate" type="hidden" class="additional-checkout" value="${checkoutDateValue}" />
+                    `}<div class="row">                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Amount Paid (Advance Payment) <span class="text-danger">*</span></label>
+                            <input name="RoomBookings[${index}].AmountPaid" type="number" step="0.01" class="form-control amount-paid-input" min="0" value="0" required />
+                            <div class="form-text">Enter the advance payment amount. Remaining balance will be collected at checkout.</div>
+                        </div>
+                        
+                        <!-- Hidden field for total amount calculation -->
+                        <input name="RoomBookings[${index}].Amount" type="hidden" class="amount-input" />
+                    </div>
+                  </div>
+            `;
+        }        // Initialize event listeners for a booking
+        function initializeBookingEvents(index) {
+            const bookingItem = document.querySelector(`[data-index="${index}"]`);
+            if (!bookingItem) return;
+
+            // Simplified event listeners - no complex date validation
+            const roomSelect = bookingItem.querySelector('.room-select');
+            const guestsInput = bookingItem.querySelector('.guests-input');
+
+            // Handle room selection changes
+            if (roomSelect) {
+                roomSelect.addEventListener('change', function() {
+                    calculateAmounts(bookingItem);
+                    updateRoomOptions();
+                });
+            }
+
+            // Simple date sync for primary booking
+            if (index === 0) {
+                const checkinInput = bookingItem.querySelector('.checkin-input');
+                const checkoutInput = bookingItem.querySelector('.checkout-input');
+                
+                if (checkinInput) {
+                    checkinInput.addEventListener('change', syncDatesFromPrimary);
+                }
+                if (checkoutInput) {
+                    checkoutInput.addEventListener('change', syncDatesFromPrimary);
+                }
+            }
+
+            // Validate guest capacity when room or guests change
+            [roomSelect, guestsInput].forEach(input => {
+                if (input) {
+                    input.addEventListener('change', () => validateGuestCapacity(bookingItem));
+                }
+            });
+        }// Simplified amount calculation - basic room cost only
+        function calculateAmounts(bookingItem) {
+            const roomSelect = bookingItem.querySelector('.room-select');
+            const amountInput = bookingItem.querySelector('.amount-input');
+            
+            // Check if a room is selected
+            if (!roomSelect.value) {
+                amountInput.value = '0.00';
+                return;
+            }
+
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            const costPerNight = parseFloat(selectedOption.getAttribute('data-cost')) || 0;
+
+            // Simple calculation - just room cost per night
+            amountInput.value = costPerNight.toFixed(2);
+        }// Validate guest capacity
+        function validateGuestCapacity(bookingItem) {
+            const roomSelect = bookingItem.querySelector('.room-select');
+            const guestsInput = bookingItem.querySelector('.guests-input');
+            
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            const roomCapacity = parseInt(selectedOption.getAttribute('data-capacity')) || 10;
+            const guests = parseInt(guestsInput.value) || 1;
+
+            if (guests > roomCapacity) {
+                guestsInput.setCustomValidity(`Maximum ${roomCapacity} guests allowed for this room`);
+                guestsInput.classList.add('is-invalid');
+            } else {
+                guestsInput.setCustomValidity('');
+                guestsInput.classList.remove('is-invalid');
+            }
+        }// Update booking numbers
+        function updateBookingNumbers() {
+            const bookings = document.querySelectorAll('.room-booking-item');
+            bookings.forEach((booking, index) => {
+                booking.setAttribute('data-index', index);
+                
+                // Update booking title
+                const bookingTitle = booking.querySelector('h6');
+                const isPrimary = index === 0;
+                bookingTitle.innerHTML = `
+                    <span class="mb-0 text-primary">
+                        ${isPrimary ? 'Primary' : 'Additional'} Room Booking #<span class="booking-number">${index + 1}</span>
+                    </span>
+                `;
+                
+                // Update form field names
+                booking.querySelectorAll('input, select').forEach(field => {
+                    const name = field.getAttribute('name');
+                    if (name && name.includes('RoomBookings[')) {
+                        const newName = name.replace(/RoomBookings\[\d+\]/, `RoomBookings[${index}]`);
+                        field.setAttribute('name', newName);
+                    }
+                });
+
+                // Show/hide remove button
+                const removeBtn = booking.querySelector('.remove-booking');
+                removeBtn.style.display = index === 0 ? 'none' : 'inline-block';
+            });
+            
+            bookingIndex = bookings.length;
+        }        // Toggle no bookings message
+        function toggleNoBookingsMessage() {
+            const container = document.getElementById('roomBookingsContainer');
+            const noBookingsMsg = document.getElementById('noRoomBookings');
+            const hasBookings = container.children.length > 0;
+            
+            noBookingsMsg.style.display = hasBookings ? 'none' : 'block';
+        }
+
+        // Initialize existing bookings
+        document.addEventListener('DOMContentLoaded', function() {
+            const existingBookings = document.querySelectorAll('.room-booking-item');
+            existingBookings.forEach((booking, index) => {
+                initializeBookingEvents(index);
+                calculateAmounts(booking);
+                validateGuestCapacity(booking);
+            });
+              toggleNoBookingsMessage();
+        });
+
+        // Toggle cab booking details
+        const cabBookingSwitch = document.getElementById('cabBookingSwitch');
+        const cabBookingDetails = document.getElementById('cabBookingDetails');
+
+        if (cabBookingSwitch && cabBookingDetails) {
+            cabBookingSwitch.addEventListener('change', function() {
+                cabBookingDetails.style.display = this.checked ? 'block' : 'none';
+            });
+        }        // Simplified bootstrap form validation - no date sync
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();// Auto-hide only dismissible alerts (temporary notifications) after 5 seconds
+        setTimeout(function() {
+            const dismissibleAlerts = document.querySelectorAll('.alert.alert-dismissible');
+            dismissibleAlerts.forEach(function(alert) {
+                // Only hide if it's a success or info alert (not error/warning which should stay visible)
+                if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 500);
+                }
+            });
+        }, 5000);        // Confirmation modal for customer creation
+        function confirmCreateCustomer() {
+            const form = document.querySelector('form');
+            
+            // Check if form is valid first
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return false;
+            }
+
+            Swal.fire({
+                title: 'Create Customer?',
+                text: "Are you sure you want to create this customer with the provided details?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, create customer',
+                cancelButtonText: 'Review details',
+                customClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show processing notification
+                    showNotification('info', 'Creating customer...');
+                    form.submit();
+                }
+            });
+            
+            return false; // Prevent default form submission
+        }        // Basic initialization for form elements
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeIdTypeValidation();
+            initializeAddressCharacterCount();
+        });
+
+        // Initialize ID type validation with format examples
+        function initializeIdTypeValidation() {
+            const idTypeSelect = document.getElementById('idTypeSelect');
+            const customerIdInput = document.getElementById('customerIdInput');
+            const formatExample = document.getElementById('idFormatExample');
+
+            const idFormats = {
+                'Aadhar Card': {
+                    pattern: '^[0-9]{4}\\s?[0-9]{4}\\s?[0-9]{4}$',
+                    example: 'Format: 1234 5678 9012 (12 digits)',
+                    placeholder: 'Enter 12-digit Aadhar number'
+                },
+                'Passport': {
+                    pattern: '^[A-Z]{1}[0-9]{7}$',
+                    example: 'Format: A1234567 (1 letter + 7 digits)',
+                    placeholder: 'Enter passport number'
+                },
+                'Driving License': {
+                    pattern: '^[A-Z]{2}[0-9]{2}\\s?[0-9]{11}$',
+                    example: 'Format: AP12 20120012345 (State code + 13 digits)',
+                    placeholder: 'Enter driving license number'
+                },
+                'Voter ID': {
+                    pattern: '^[A-Z]{3}[0-9]{7}$',
+                    example: 'Format: ABC1234567 (3 letters + 7 digits)',
+                    placeholder: 'Enter voter ID number'
+                },
+                'PAN Card': {
+                    pattern: '^[A-Z]{5}[0-9]{4}[A-Z]{1}$',
+                    example: 'Format: ABCDE1234F (5 letters + 4 digits + 1 letter)',
+                    placeholder: 'Enter PAN number'
+                }
+            };
+
+            if (idTypeSelect && customerIdInput && formatExample) {
+                idTypeSelect.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    if (selectedType && idFormats[selectedType]) {
+                        const format = idFormats[selectedType];
+                        customerIdInput.setAttribute('pattern', format.pattern);
+                        customerIdInput.setAttribute('placeholder', format.placeholder);
+                        formatExample.innerHTML = `<i class="bi bi-info-circle text-primary me-1"></i>${format.example}`;
+                        formatExample.style.color = '#0d6efd';
+                        
+                        // Clear previous validation state
+                        customerIdInput.classList.remove('is-valid', 'is-invalid');
+                        customerIdInput.value = '';
+                    } else {
+                        customerIdInput.removeAttribute('pattern');
+                        customerIdInput.setAttribute('placeholder', 'ID Number');
+                        formatExample.textContent = 'Select ID type to see format example';
+                        formatExample.style.color = '#6c757d';
+                    }
+                });
+
+                // Real-time validation for ID number
+                customerIdInput.addEventListener('input', function() {
+                    const idType = idTypeSelect.value;
+                    const value = this.value.trim();
+                    
+                    if (idType && idFormats[idType] && value) {
+                        const pattern = new RegExp(idFormats[idType].pattern);
+                        if (pattern.test(value)) {
+                            this.classList.remove('is-invalid');
+                            this.classList.add('is-valid');
+                            this.setCustomValidity('');
+                        } else {
+                            this.classList.remove('is-valid');
+                            this.classList.add('is-invalid');
+                            this.setCustomValidity(`Please enter a valid ${idType} number`);
+                        }
+                    } else if (value) {
+                        this.classList.remove('is-valid', 'is-invalid');
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+        }
+
+        // Initialize mobile number formatting and validation
+        function initializeMobileNumberFormatting() {
+            const mobileInput = document.querySelector('input[name="MobileNo"]');
+            if (mobileInput) {
+                mobileInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    
+                    // Format mobile number
+                    if (value.length === 10 && value.match(/^[6789]/)) {
+                        // Valid 10-digit Indian mobile number
+                        e.target.classList.remove('is-invalid');
+                        e.target.classList.add('is-valid');
+                        e.target.setCustomValidity('');
+                    } else if (value.length > 10) {
+                        // Handle numbers with country code
+                        if (value.startsWith('91') && value.length === 12) {
+                            const mobile = value.substring(2);
+                            if (mobile.match(/^[6789]/)) {
+                                e.target.value = '+91' + mobile;
+                                e.target.classList.remove('is-invalid');
+                                e.target.classList.add('is-valid');
+                                e.target.setCustomValidity('');
+                                return;
+                            }
+                        }
+                        e.target.classList.remove('is-valid');
+                        e.target.classList.add('is-invalid');
+                        e.target.setCustomValidity('Please enter a valid 10-digit mobile number');
+                    } else if (value.length > 0) {
+                        e.target.classList.remove('is-valid');
+                        e.target.classList.add('is-invalid');
+                        e.target.setCustomValidity('Mobile number must be 10 digits');
+                    } else {
+                        e.target.classList.remove('is-valid', 'is-invalid');
+                        e.target.setCustomValidity('');
+                    }
+                    
+                    e.target.value = value;
+                });
+
+                // Add blur validation
+                mobileInput.addEventListener('blur', function() {
+                    const value = this.value.replace(/\D/g, '');
+                    if (value.length === 10 && value.match(/^[6789]/)) {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else if (value.length > 0) {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                });
+            }
+        }        // Initialize address character count
+        function initializeAddressCharacterCount() {
+            const addressTextarea = document.querySelector('textarea[name="Address"]');
+            const charCount = document.getElementById('addressCharCount');
+            
+            if (addressTextarea && charCount) {
+                addressTextarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    charCount.textContent = length;
+                });
+            }
+        }
+    </script>
+

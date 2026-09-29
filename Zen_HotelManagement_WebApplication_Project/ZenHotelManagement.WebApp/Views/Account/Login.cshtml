@@ -1,0 +1,176 @@
+﻿@model Login
+@{
+    ViewData["Title"] = "Login";
+    Layout = "/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="container"  min-height: 100vh;">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeIn" style="background: #EAEFEF">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-building text-primary" style="font-size: 3rem; animation: bounce 2s infinite;"></i>
+                        <h2 class="mt-3">Zen Hotel</h2>
+                        <p class="text-muted">Welcome back! Please sign in.</p>
+                    </div>
+
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
+                            <strong>Error!</strong> @Html.ValidationSummary(true)
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Login" asp-controller="Account" method="post">
+                        @if (ViewData["ReturnUrl"] != null)
+                        {
+                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                        }
+                        <div class="form-floating mb-3 animate__animated animate__fadeInLeft">
+                            <input asp-for="Name" class="form-control" placeholder="Username" />
+                            <label asp-for="Name"><i class="bi bi-person me-2"></i>Username</label>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-4 animate__animated animate__fadeInRight">
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+                            <label asp-for="Password"><i class="bi bi-lock me-2"></i>Password</label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3 animate__animated animate__fadeInUp">
+                            <input type="text" name="captchaInput" class="form-control" placeholder="Enter CAPTCHA" />
+                            <label for="captchaInput"><i class="bi bi-shield-lock me-2"></i>Enter CAPTCHA: @ViewBag.CaptchaCode</label>
+                            <span class="text-danger">@Html.ValidationMessage("captchaInput")</span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" style="background-color: #007bff; border-color: #007bff; animation: pulse 1s infinite;">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Secure login for authorized personnel only
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-30px);
+        }
+
+        60% {
+            transform: translateY(-15px);
+        }
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+        }
+    }
+
+    .animate__animated.animate__fadeIn {
+        animation: fadeIn 1s;
+    }
+
+    .animate__animated.animate__shakeX {
+        animation: shakeX 1s;
+    }
+
+    .animate__animated.animate__fadeInLeft {
+        animation: fadeInLeft 1s;
+    }
+
+    .animate__animated.animate__fadeInRight {
+        animation: fadeInRight 1s;
+    }
+
+    .animate__animated.animate__fadeInUp {
+        animation: fadeInUp 1s;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes shakeX {
+        from, to {
+            transform: translateX(0);
+        }
+
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-10px);
+        }
+
+        20%, 40%, 60%, 80% {
+            transform: translateX(10px);
+        }
+    }
+
+    @@keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

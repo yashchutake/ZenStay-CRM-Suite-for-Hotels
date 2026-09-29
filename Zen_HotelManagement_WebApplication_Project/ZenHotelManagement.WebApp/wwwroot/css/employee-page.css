@@ -1,0 +1,155 @@
+/* Employee Page Styles */
+.stats-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+}
+
+.stats-card .icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2.5rem;
+    opacity: 0.1;
+}
+
+.stats-card[data-type="total"] .icon {
+    color: #0d6efd;
+}
+
+.stats-card[data-type="active"] .icon {
+    color: #198754;
+}
+
+.stats-card[data-type="salary"] .icon {
+    color: #0dcaf0;
+}
+
+.filter-card {
+    border: none;
+    background-color: #f8f9fa;
+}
+
+.search-input-group .input-group-text {
+    border-right: 0;
+}
+
+.search-input-group .form-control:focus {
+    border-color: #dee2e6;
+    box-shadow: none;
+}
+
+.employee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-avatar i {
+    font-size: 1.2rem;
+}
+
+/* Table styles */
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Badge styles */
+.badge.bg-gradient-success {
+    background: linear-gradient(135deg, #198754, #20c997);
+}
+
+.badge.bg-gradient-danger {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+}
+
+/* Pagination styles */
+.pagination {
+    margin: 0;
+    gap: 0.25rem;
+}
+
+.pagination .page-item .page-link {
+    border: none;
+    padding: 0.5rem 0.75rem;
+    color: #6c757d;
+    border-radius: 6px;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.pagination .page-item .page-link:hover {
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    color: white;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+/* Animation classes */
+.scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.98);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Empty state styles */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dee2e6;
+}
+
+.empty-state h5 {
+    margin-top: 1rem;
+    color: #495057;
+}
+
+.empty-state p {
+    color: #6c757d;
+}

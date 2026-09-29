@@ -1,0 +1,50 @@
+﻿@* _ReceptionistSidebar.cshtml *@
+@{
+    var activeTab = ViewData["ActiveTab"] as string ?? "Dashboard";
+}
+
+<nav class="sidebar-nav">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <h3>ZenHotel</h3>
+        <div class="brand-subtitle">Reception Desk</div>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <div class="sidebar-menu">
+        <a class="sidebar-link @(activeTab == "Dashboard" ? "active" : "")" href="/Receptionist/Dashboard">
+            <i class="bi bi-speedometer2"></i>
+            Dashboard
+        </a>
+        
+        <a class="sidebar-link @(activeTab == "Customers" ? "active" : "")" href="/Customer/Index">
+            <i class="bi bi-people"></i>
+            Customers
+        </a>
+        
+        <a class="sidebar-link @(activeTab == "Rooms" ? "active" : "")" href="/Room/Display">
+            <i class="bi bi-door-closed"></i>
+            Rooms
+        </a>
+        
+        <a class="sidebar-link @(activeTab == "CabDrivers" ? "active" : "")" href="/CabDriver/Display">
+            <i class="bi bi-taxi-front"></i>
+            Cab Drivers
+        </a>
+
+        <a class="sidebar-link @(activeTab == "ChangeCredentials" ? "active" : "")" href="/Account/ChangePassword">
+            <i class="bi bi-key"></i>
+           Reset Password
+        </a>
+
+       
+    </div>
+    
+    <!-- Sidebar Footer with Logout -->
+    <div class="sidebar-footer">
+        <a class="logout-link" href="/Account/Logout">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+        </a>
+    </div>
+</nav>

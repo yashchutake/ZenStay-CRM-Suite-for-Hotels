@@ -1,0 +1,546 @@
+@model ZenHotelManagement.WebApp.Models.ViewModel.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout - Payment Settlement";
+}
+
+<script src="~/js/notification.js"></script>
+
+
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <div class="avatar-lg bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+            <i class="bi bi-credit-card text-success fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0">Checkout & Payment</h2>
+            <small class="text-muted">Settlement for @Model.Customer.Name</small>
+        </div>
+    </div>
+    <a href="@Url.Action("Details", "Customer", new { customerId = Model.Customer.CustomerId })" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Details
+    </a>
+</div>
+
+<!-- Early Checkout Notification -->
+@{
+    var hasEarlyCheckout = Model.BookingsForCheckout.Any(b => b.CheckOutDate.HasValue && b.CheckOutDate.Value < DateTime.Now.Date);
+}
+@if (hasEarlyCheckout)
+{
+    <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-start">
+            <i class="bi bi-exclamation-triangle-fill me-3 mt-1 text-warning"></i>
+            <div>
+                <h6 class="alert-heading mb-2">Early Checkout Detected</h6>
+                <p class="mb-2">This customer is checking out before the scheduled date. The bill has been automatically recalculated based on actual stay duration.</p>
+                <hr class="my-2">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Charges are calculated pro-rata for early departure. No penalty fees applied.
+                </small>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Alerts Section -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    @TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Customer Info Card -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-fill me-2"></i>
+                                Customer Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Name:</strong> @Model.Customer.Name</p>
+                            <p class="mb-2"><strong>Customer ID:</strong> @Model.Customer.CustomerId</p>
+                            <p class="mb-0"><strong>Mobile:</strong> @Model.Customer.MobileNo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-calculator me-2"></i>
+                                Payment Summary
+                            </h5>
+                        </div>                        <div class="card-body">
+                            @{
+                                // Use dynamic calculation amounts if available, otherwise fall back to original calculation
+                                var calculatedTotalAmount = Model.RecalculatedTotalAmount > 0 ? Model.RecalculatedTotalAmount : Model.BookingsForCheckout.Sum(b => (b.TotalAmount ?? 0) > 0 ? (b.TotalAmount ?? 0) : b.AmountPaid);
+                                var totalAmountPaid = Model.BookingsForCheckout.Sum(b => b.AmountPaid);
+                                var finalAmountDue = Model.FinalAmountDue > 0 ? Model.FinalAmountDue : calculatedTotalAmount - totalAmountPaid;
+                                var originalTotalAmount = Model.BookingsForCheckout.Sum(b => (b.TotalAmount ?? 0) > 0 ? (b.TotalAmount ?? 0) : b.AmountPaid);
+                                var hasDynamicCalculation = Model.RecalculatedTotalAmount > 0;
+                                var savingsOrCharge = originalTotalAmount - calculatedTotalAmount;
+                            }
+                            
+                            @* Show dynamic calculation summary if available *@
+                            @if (hasDynamicCalculation)
+                            {
+                                <div class="alert alert-info mb-3">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-calculator me-2"></i>Dynamic Checkout Calculation Applied
+                                    </h6>
+                                    @if (Model.HasEarlyCheckouts)
+                                    {
+                                        <small><i class="bi bi-clock-history me-1"></i>Early checkout detected - amounts recalculated</small><br>
+                                    }
+                                    @if (Model.HasTBDBookings)
+                                    {
+                                        <small><i class="bi bi-calendar-question me-1"></i>TBD bookings - final dates confirmed</small><br>
+                                    }
+                                    <small class="text-muted">All amounts shown reflect actual checkout date: @Model.ActualCheckoutDate.ToString("dd MMM yyyy hh:mm tt")</small>
+                                </div>
+                                
+                                @if (Math.Abs(savingsOrCharge) > 0.01m)
+                                {
+                                    <div class="alert @(savingsOrCharge > 0 ? "alert-success" : "alert-warning") mb-3">
+                                        <i class="bi @(savingsOrCharge > 0 ? "bi-piggy-bank" : "bi-exclamation-triangle") me-2"></i>                                        @if (savingsOrCharge > 0)
+                                        {
+                                            <strong>Savings Applied:</strong> @($"You save ₹{savingsOrCharge:N2} due to recalculation")
+                                        }
+                                        else
+                                        {
+                                            <strong>Additional Charge:</strong> @($"₹{Math.Abs(savingsOrCharge):N2} due to recalculation")
+                                        }
+                                    </div>
+                                }
+                            }
+                            
+                            @* Original amount display (crossed out if recalculated) *@
+                            @if (hasDynamicCalculation && Math.Abs(originalTotalAmount - calculatedTotalAmount) > 0.01m)
+                            {                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted"><del>Original Total Amount:</del></span>
+                                    <span class="text-muted"><del>₹@(originalTotalAmount.ToString("N2"))</del></span>
+                                </div>
+                            }
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>@(hasDynamicCalculation ? "Recalculated" : "Total") Amount:</span>
+                                <strong class="@(hasDynamicCalculation ? "text-primary" : "")">₹@(calculatedTotalAmount.ToString("N2"))</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Advance Payment:</span>
+                                <strong class="text-info">₹@(totalAmountPaid.ToString("N2"))</strong>
+                            </div><div class="d-flex justify-content-between">
+                                <span>Amount Due at Checkout:</span>
+                                <strong class="text-success">
+                                    ₹@(finalAmountDue.ToString("N2"))
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings for Checkout -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-check me-2"></i>
+                        Bookings Available for Checkout (@Model.BookingsForCheckout.Count)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.BookingsForCheckout.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllBookings">
+                                                <label class="form-check-label" for="selectAllBookings">
+                                                    Select All
+                                                </label>
+                                            </div>
+                                        </th>                                        <th scope="col">Booking ID</th>
+                                        <th scope="col">Room</th>
+                                        <th scope="col">Check-In</th>
+                                        <th scope="col">Check-Out</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Checkout Type</th>
+                                        <th scope="col">Total Amount</th>
+                                        <th scope="col">Advance Payment</th>
+                                        <th scope="col">Amount at Checkout</th>
+                                    </tr>
+                                </thead>
+                                <tbody>                                    @foreach (var booking in Model.BookingsForCheckout)
+                                    {
+                                        var calculation = Model.BookingCalculations?.FirstOrDefault(bc => bc.BookingId == booking.BookingId);
+                                        var bookingTotalAmount = calculation?.RecalculatedAmount ?? ((booking.TotalAmount ?? 0) > 0 ? (booking.TotalAmount ?? 0) : booking.AmountPaid);
+                                        var originalAmount = calculation?.OriginalAmount ?? bookingTotalAmount;
+                                        var hasRecalculation = calculation != null && Math.Abs(calculation.OriginalAmount - calculation.RecalculatedAmount) > 0.01m;
+                                        var amountDue = calculation?.FinalAmountDue ?? (bookingTotalAmount - booking.AmountPaid);
+                                        
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input booking-checkbox"
+                                                           type="checkbox" 
+                                                           value="@booking.BookingId"
+                                                           id="booking_@booking.BookingId">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">#@booking.BookingId</span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-medium">Room @booking.RoomId</span>
+                                                @if (calculation != null && !string.IsNullOrEmpty(calculation.RoomNo))
+                                                {
+                                                    <br><small class="text-muted">@calculation.RoomNo</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @booking.CheckInDate.ToString("dd MMM yyyy")
+                                                    <br>
+                                                    @booking.CheckInDate.ToString("hh:mm tt")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @if (booking.CheckOutDate.HasValue)
+                                                    {
+                                                        @booking.CheckOutDate.Value.ToString("dd MMM yyyy")
+                                                        <br>
+                                                        @booking.CheckOutDate.Value.ToString("hh:mm tt")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-info">TBD</span>
+                                                    }
+                                                    
+                                                    @* Show actual checkout date if different *@
+                                                    @if (calculation != null && calculation.ActualCheckOutDate.Date != (booking.CheckOutDate?.Date ?? DateTime.Now.Date))
+                                                    {
+                                                        <br><strong class="text-success">
+                                                            Actual: @calculation.ActualCheckOutDate.ToString("dd MMM yyyy")
+                                                        </strong>
+                                                    }
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @await Html.PartialAsync("_StatusBadge", null, new ViewDataDictionary(ViewData) 
+                                                { 
+                                                    ["Status"] = booking.BookingStatus,
+                                                    ["BadgeType"] = "room",
+                                                    ["Size"] = "sm"
+                                                })
+                                            </td>
+                                            <td>
+                                                @if (calculation != null)
+                                                {
+                                                    <span class="badge @(calculation.CheckoutType == "Early" ? "bg-info" : calculation.CheckoutType == "TBD" ? "bg-warning" : calculation.IsSameDayCheckout ? "bg-secondary" : "bg-success")">
+                                                        @calculation.CheckoutType
+                                                    </span>
+                                                    @if (calculation.IsEarlyCheckout)
+                                                    {
+                                                        <br><small class="text-info">
+                                                            <i class="bi bi-clock-history me-1"></i>
+                                                            @calculation.ActualNights of @calculation.OriginalNights nights
+                                                        </small>
+                                                    }
+                                                    @if (calculation.IsSameDayCheckout)
+                                                    {
+                                                        <br><small class="text-warning">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                            Min 1 night charged
+                                                        </small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Normal</span>
+                                                }
+                                            </td>
+                                            <td>                                                @if (hasRecalculation)
+                                                {
+                                                    <div>
+                                                        <small class="text-muted"><del>₹@(originalAmount.ToString("N2"))</del></small>
+                                                        <br>
+                                                        <strong class="text-primary">₹@(bookingTotalAmount.ToString("N2"))</strong>
+                                                        @{
+                                                            var difference = originalAmount - bookingTotalAmount;
+                                                        }
+                                                        @if (Math.Abs(difference) > 0.01m)
+                                                        {
+                                                            <br>
+                                                            <small class="@(difference > 0 ? "text-success" : "text-warning")">
+                                                                @(difference > 0 ? "↓" : "↑") ₹@(Math.Abs(difference).ToString("N2"))
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <strong>₹@(bookingTotalAmount.ToString("N2"))</strong>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="text-info">₹@(booking.AmountPaid.ToString("N2"))</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success fw-bold">
+                                                    ₹@(amountDue.ToString("N2"))
+                                                </span>
+                                                @if (calculation?.FinalAmountDue != null && Math.Abs((bookingTotalAmount - booking.AmountPaid) - calculation.FinalAmountDue) > 0.01m)
+                                                {
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <del>₹@(((bookingTotalAmount - booking.AmountPaid)).ToString("N2"))</del>
+                                                    </small>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <h4 class="text-muted mt-3">No Bookings Available</h4>
+                            <p class="text-muted">There are no bookings available for checkout at this time.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Payment & Checkout Form -->
+            @if (Model.BookingsForCheckout.Any())
+            {
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-credit-card-fill me-2"></i>
+                            Payment & Checkout
+                        </h5>
+                    </div>                    <div class="card-body">
+                        <form id="checkoutForm" asp-action="ProcessCheckout" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="CustomerId" value="@Model.Customer.CustomerId" />
+                            <input type="hidden" name="BookingIds" id="selectedBookingIds" />
+                              <div class="row">
+                                <div class="col-12">                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Full Payment Required:</strong> Complete checkout with full payment of ₹@(finalAmountDue.ToString("N2"))
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="text-muted">Selected bookings: </span>
+                                            <span id="selectedCount" class="fw-bold">0</span>
+                                        </div>                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-success btn-lg" id="processFullCheckout" onclick="confirmCheckout()">
+                                                <i class="bi bi-check-circle-fill me-2"></i>
+                                                Complete Checkout
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.booking-checkbox');
+    const selectAllBtn = document.getElementById('selectAllBookings');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectedBookingIdsInput = document.getElementById('selectedBookingIds');
+    const processFullBtn = document.getElementById('processFullCheckout');
+
+    // Update selected count and form state
+    function updateFormState() {
+        const selectedBookings = Array.from(checkboxes).filter(cb => cb.checked);
+        const selectedCount = selectedBookings.length;
+        
+        selectedCountSpan.textContent = selectedCount;
+        
+        // Update hidden input with selected booking IDs as comma-separated string
+        selectedBookingIdsInput.value = selectedBookings.map(cb => cb.value).join(',');
+        
+        // Enable/disable button based on selection
+        processFullBtn.disabled = selectedCount === 0;
+    }
+
+    // Handle individual checkbox changes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateFormState);
+    });
+
+    // Handle select all checkbox
+    selectAllBtn.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateFormState();
+    });
+
+    // Initial form state update
+    updateFormState();    // Auto-hide only dismissible alerts (temporary notifications) after 5 seconds
+    setTimeout(function() {
+        const dismissibleAlerts = document.querySelectorAll('.alert.alert-dismissible');
+        dismissibleAlerts.forEach(function(alert) {
+            // Only hide if it's a success or info alert (not error/warning which should stay visible)
+            if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        });
+    }, 5000);
+});
+</script>
+
+<style>
+.card {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.booking-checkbox:checked + label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.payment-quick-btn {
+    transition: all 0.15s ease-in-out;
+}
+
+.payment-quick-btn:hover {
+    transform: translateY(-1px);
+}
+
+#processPartialPayment:disabled,
+#processFullCheckout:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.avatar-lg {
+    width: 60px;
+    height: 60px;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.alert {
+    border-radius: 0.75rem;
+}
+</style>
+
+<script>
+    // Confirmation modal for checkout
+    function confirmCheckout() {
+        const selectedBookings = document.querySelectorAll('.booking-checkbox:checked');
+        const totalAmount = '@Model.FinalAmountDue.ToString("N2")';
+        
+        if (selectedBookings.length === 0) {
+            Swal.fire({
+                title: 'No Bookings Selected',
+                text: 'Please select at least one booking to checkout.',
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                }
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Confirm Checkout & Payment',
+            html: `
+                <div class="text-start">
+                    <p class="mb-2">You are about to process checkout for:</p>
+                    <ul class="list-unstyled mb-3">
+                        <li><i class="bi bi-person me-2 text-primary"></i><strong>Customer:</strong> @Model.Customer.Name</li>
+                        <li><i class="bi bi-building me-2 text-success"></i><strong>Bookings:</strong> ${selectedBookings.length} selected</li>
+                        <li><i class="bi bi-currency-rupee me-2 text-info"></i><strong>Amount:</strong> ₹${totalAmount}</li>
+                    </ul>
+                    <div class="alert alert-warning alert-sm mb-0">
+                        <small><i class="bi bi-exclamation-triangle me-1"></i>This action will mark the selected bookings as checked out and process the payment. This cannot be undone.</small>
+                    </div>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, process checkout',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show processing notification
+                showNotification('info', 'Processing checkout and payment...');
+                document.getElementById('checkoutForm').submit();
+            }
+        });
+    }
+</script>

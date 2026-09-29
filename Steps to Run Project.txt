@@ -1,0 +1,17 @@
+WebApi-
+1.Delete migration folder and existing db data if there
+2.create db- 
+(localdb)\mssqllocaldb
+microsoft SQL server file
+name- ZenHotelDb and copy connection string paste to appsettings.json
+3.dotnet new tool-manifest --force
+4.dotnet tool install dotnet-ef --version 8.0.8
+5.Change Dir-> cd C:\Workspace\Zen_HotelManagement\Zen_HotelManagement_WebApi_Project\ZenHotelManagement.WebApi
+6.dotnet ef migrations add Initial
+7.dotnet ef database update
+8.build and run using button or dotnet build 
+
+
+WebApp-
+1.dotnet restore
+2.run button or dotnet build 

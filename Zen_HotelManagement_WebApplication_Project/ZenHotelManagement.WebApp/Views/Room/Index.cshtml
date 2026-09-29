@@ -1,0 +1,489 @@
+﻿@model ZenHotelManagement.WebApp.Models.ViewModel.PagedList<ZenHotelManagement.WebApp.Models.Room>
+@using System.Globalization;
+
+@{
+    ViewData["Title"] = "";
+    ViewData["ActiveTab"] = "Rooms";
+}
+
+
+
+@* Success/Error Messages  *@
+ @if (TempData["SuccessMessage"] != null) 
+ { 
+     <div class="alert alert-success alert-dismissible fade show" role="alert"> 
+         <i class="bi bi-check-circle me-2"></i> 
+         @TempData["SuccessMessage"] 
+         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
+     </div> 
+ }
+
+ @if (TempData["ErrorMessage"] != null) 
+ { 
+     <div class="alert alert-danger alert-dismissible fade show" role="alert"> 
+         <i class="bi bi-exclamation-triangle me-2"></i> 
+         @TempData["ErrorMessage"] 
+         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
+   </div> 
+ }
+
+ 
+
+
+<!-- Stats Section -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="total">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-door-closed-fill me-2"></i>Total Rooms
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@Model.TotalCount</h3>
+                        <small class="text-muted">registered</small>
+                    </div>
+                </div>
+                <i class="bi bi-door-closed-fill icon text-primary"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="available">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-check-circle-fill me-2"></i>Available Rooms
+                    </h6>                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@ViewBag.AvailableRoomsCount</h3>
+                        <small class="text-muted">ready for booking</small>
+                    </div>
+                </div>
+                <i class="bi bi-check-circle-fill icon text-success"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="clean">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-stars me-2"></i>Clean Rooms
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@ViewBag.AvailableCleanRooms</h3>
+                        <small class="text-muted">ready for use</small>
+                    </div>
+                </div>
+                <i class="bi bi-stars icon text-info"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card filter-card shadow-sm mb-4 slide-in">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel-fill me-2"></i>Filter Rooms
+            </h5>
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Add New Room
+            </a>
+        </div>
+        <form method="get" asp-action="Index">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="SearchTerm" class="form-label">
+                            <i class="bi bi-search me-2"></i>Search Rooms
+                        </label>
+                        <div class="search-input-group input-group">
+                            <span class="input-group-text border-end-0 bg-transparent">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" id="SearchTerm" name="SearchTerm" class="form-control border-start-0"
+                                   value="@(ViewBag.CurrentFilter?.SearchTerm)" placeholder="Search room no, type...">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="RoomType" class="form-label">Room Type:</label>
+                        <select id="RoomType" name="RoomType" class="form-select">
+                            <option value="">All Types</option>
+                            @foreach (var type in ViewBag.RoomTypes ?? new List<string>())
+                            {
+                                <option value="@type" selected="@(type == ViewBag.CurrentFilter?.RoomType)">@type</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="IsAc" class="form-label">AC:</label>
+                        <select id="IsAc" name="IsAc" class="form-select">
+                            <option value="">All</option>
+                            <option value="true" selected="@(ViewBag.CurrentFilter?.IsAc == true)">AC</option>
+                            <option value="false" selected="@(ViewBag.CurrentFilter?.IsAc == false)">Non-AC</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="RoomStatus" class="form-label">Status:</label>
+                        <select id="RoomStatus" name="RoomStatus" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="true" selected="@(ViewBag.CurrentFilter?.RoomStatus == true)">Available</option>
+                            <option value="false" selected="@(ViewBag.CurrentFilter?.RoomStatus == false)">Occupied</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="IsDeleted" class="form-label">State:</label>
+                        <select id="IsDeleted" name="IsDeleted" class="form-select">
+                            <option value="false" selected="@(ViewBag.CurrentFilter?.IsDeleted == false || ViewBag.CurrentFilter?.IsDeleted == null)">Active</option>
+                            <option value="true" selected="@(ViewBag.CurrentFilter?.IsDeleted == true)">Deleted</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table Section -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-list-ul me-2"></i>Room List
+            </h6>
+            <div class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Showing @Model.Items.Count() of @Model.TotalCount rooms
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (!Model.Items.Any())
+        {
+            <div class="empty-state p-5 text-center">
+                <i class="bi bi-door-closed display-1 text-muted mb-3"></i>
+                <h5>No rooms found</h5>
+                <p class="text-muted">Try adjusting your search or filter criteria</p>
+                <a asp-action="Create" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Room
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Room No</th>
+                            <th>Type</th>
+                            <th>AC</th>
+                            <th>Cost/Night</th>
+                            <th>Status</th>
+                            <th>Clean</th>
+                            <th>Capacity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var room in Model.Items)
+                        {
+                            <tr class="animate__animated animate__fadeIn">
+                                <td>
+                                    <span class="badge bg-info">@room.RoomNo</span>
+                                </td>
+                                <td>
+                                    <strong>@room.RoomType</strong>
+                                </td>
+                                <td>
+                                    <span class="badge @(room.IsAc ? "bg-gradient-primary" : "bg-gradient-secondary")">
+                                        <i class="bi @(room.IsAc ? "bi-snow" : "bi-fan") me-1"></i>
+                                        @(room.IsAc ? "AC" : "Non-AC")
+                                    </span>
+                                </td>
+                                <td>@room.CostPerNight.ToString("C", new CultureInfo("hi-IN"))</td>
+                                <td>
+                                   
+                                    @if (room.IsDeleted == false)
+                                    {
+                                        <span class="badge @(room.RoomStatus ? "bg-gradient-success" : "bg-gradient-warning")">
+                                            <i class="bi @(room.RoomStatus ? "bi-check-circle-fill" : "bi-clock-fill") me-1"></i>
+                                            @(room.RoomStatus ? "Available" : "Occupied")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-gradient-secondary">
+                                            <i class="bi bi-clock-fill me-1"></i>
+                                            Inactive
+                                        </span>                                      
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(room.IsClean ? "bg-gradient-success" : "bg-gradient-danger")">
+                                        <i class="bi @(room.IsClean ? "bi-stars" : "bi-exclamation-triangle-fill") me-1"></i>
+                                        @(room.IsClean ? "Clean" : "Dirty")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-people-fill me-1"></i>
+                                        @room.RoomCapacity
+                                    </span>
+                                </td>
+                                <td>
+                                    <form method="post"
+                                          asp-action="Delete"
+                                          asp-route-roomNo="@room.RoomNo"
+                                          class="d-inline"
+                                          onsubmit="return confirmStatusChange('@(room.IsDeleted ? "restore" : "remove")', '@room.RoomNo', event)">
+                                        <button type="submit"
+                                                class="btn btn-sm @(room.IsDeleted ? "btn-outline-success" : "btn-outline-danger")"
+                                                data-bs-toggle="tooltip"
+                                                title="@(room.IsDeleted ? "Restore Room to active status" : "Mark Room as inactive")">
+                                            <i class="bi @(room.IsDeleted ? "bi bi-arrow-clockwise" : "bi bi-trash")"></i>
+                                        </button>
+                                    </form>
+                                    @if (!room.IsClean)
+                                    {
+                                        <form asp-action="UpdateRoomCleanStatus" method="post" style="display: inline;"
+                                              onsubmit="return confirmRoomCleaning('@room.RoomNo')">
+                                            <input type="hidden" name="roomNo" value="@room.RoomNo" />
+                                            <button type="submit" class="btn btn-outline-primary btn-sm" 
+                                                    data-bs-toggle="tooltip" title="Mark room as clean">
+                                                <i class="bi bi-stars"></i>
+                                            </button>
+                                        </form>
+                                    }
+
+                                    
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Page @Model.PageNumber of @Model.TotalPages
+                    </div>
+                    <nav>
+                        <ul class="pagination">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="1"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-roomType="@ViewBag.CurrentFilter?.RoomType"
+                                       asp-route-isAc="@ViewBag.CurrentFilter?.IsAc"
+                                       asp-route-isClean="@ViewBag.CurrentFilter?.IsClean"
+                                       asp-route-roomStatus="@ViewBag.CurrentFilter?.RoomStatus"
+                                       asp-route-isDeleted="@ViewBag.CurrentFilter?.IsDeleted">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-roomType="@ViewBag.CurrentFilter?.RoomType"
+                                       asp-route-isAc="@ViewBag.CurrentFilter?.IsAc"
+                                       asp-route-isClean="@ViewBag.CurrentFilter?.IsClean"
+                                       asp-route-roomStatus="@ViewBag.CurrentFilter?.RoomStatus"
+                                       asp-route-isDeleted="@ViewBag.CurrentFilter?.IsDeleted">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item active">
+                                <span class="page-link">@Model.PageNumber</span>
+                            </li>
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-roomType="@ViewBag.CurrentFilter?.RoomType"
+                                       asp-route-isAc="@ViewBag.CurrentFilter?.IsAc"
+                                       asp-route-isClean="@ViewBag.CurrentFilter?.IsClean"
+                                       asp-route-roomStatus="@ViewBag.CurrentFilter?.RoomStatus"
+                                       asp-route-isDeleted="@ViewBag.CurrentFilter?.IsDeleted">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@Model.TotalPages"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-roomType="@ViewBag.CurrentFilter?.RoomType"
+                                       asp-route-isAc="@ViewBag.CurrentFilter?.IsAc"
+                                       asp-route-isClean="@ViewBag.CurrentFilter?.IsClean"
+                                       asp-route-roomStatus="@ViewBag.CurrentFilter?.RoomStatus"
+                                       asp-route-isDeleted="@ViewBag.CurrentFilter?.IsDeleted">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/js/rooms.js"></script>
+<script>
+    // Enable Bootstrap validation styling
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit filter changes
+        const filterForm = document.querySelector('form');
+        const filterSelects = filterForm.querySelectorAll('select');
+        const filterInputs = filterForm.querySelectorAll('input');
+
+        [...filterSelects, ...filterInputs].forEach(element => {
+            element.addEventListener('change', () => filterForm.submit());
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+
+     // Status change confirmation using SweetAlert2
+        function confirmStatusChange(action, RoomNo, event) {
+            event.preventDefault(); // Prevent immediate form submission
+            const form = event.target.closest('form');
+
+            showDeleteConfirmation(action, RoomNo).then((result) => {
+                if (result.isConfirmed && form) {
+                    form.submit(); // Submit the form if user confirmed
+                }
+            });
+
+            return false; // Prevent default form submission
+        }
+
+    function confirmRoomCleaning(roomNo) {
+        const form = event.target.closest('form');
+        const modal = new bootstrap.Modal(document.getElementById('cleanRoomModal'));
+        document.getElementById('cleanRoomMessage').textContent = `Are you sure you want to mark Room ${roomNo} as clean?`;
+        
+        // Handle confirm button click
+        document.getElementById('confirmCleanButton').onclick = function() {
+            form.submit();
+            modal.hide();
+        };
+        
+        modal.show();
+        return false;
+    }
+</script>
+
+<!-- Clean Room Confirmation Modal -->
+<div class="modal fade" id="cleanRoomModal" tabindex="-1" aria-labelledby="cleanRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="cleanRoomModalLabel">
+                    <i class="bi bi-stars me-2"></i>Mark Room as Clean
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-0" id="cleanRoomMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" id="confirmCleanButton">
+                    <i class="bi bi-stars me-1"></i>Mark as Clean
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-card {
+        transition: transform 0.2s;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-card .icon {
+        position: absolute;
+        right: -15px;
+        bottom: -15px;
+        font-size: 5rem;
+        opacity: 0.1;
+    }
+
+    .filter-card {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #ccc;
+    }
+
+    /* Gradient backgrounds for badges */
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+
+
+    .search-input-group {
+        transition: box-shadow 0.2s;
+    }
+
+    .search-input-group:focus-within {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .search-input-group input:focus {
+        box-shadow: none;
+    }
+</style>
+

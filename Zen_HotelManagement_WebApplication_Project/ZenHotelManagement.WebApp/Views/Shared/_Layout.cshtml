@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    var user = UserManager.GetUserAsync(User).Result;
+    var roles = user != null ? UserManager.GetRolesAsync(user).Result : new List<string>();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - ZenHotelManagement</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/custom.css?v=3.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+   
+
+
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Fixed Sidebar -->
+        <div class="sidebar-container">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                if (roles.Contains("Administrator"))
+                {
+                    @await Html.PartialAsync("_AdminSideBar.cshtml")
+                }
+                else if (roles.Contains("Receptionist"))
+                {
+                    @await Html.PartialAsync("_ReceptionistSidebar.cshtml")
+                }
+            }
+        </div>
+        
+        <!-- Main Content -->
+        <main class="main-content flex-fill" id="main-content">
+            <div class="content-wrapper">
+                <h1>@ViewData["Title"]</h1>
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
+</body>
+</html>

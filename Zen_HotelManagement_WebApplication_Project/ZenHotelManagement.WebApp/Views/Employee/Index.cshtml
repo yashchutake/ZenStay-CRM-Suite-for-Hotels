@@ -1,0 +1,412 @@
+﻿@using ZenHotelManagement.WebApp.Models.ViewModel
+@using ZenHotelManagement.WebApp.Models
+@model PagedList<Employee>
+
+@{
+    ViewData["Title"] = "";
+    ViewData["ActiveTab"] = "Employees";
+    var filter = Model.Filter as EmployeeFilterModel;
+    var totalEmployees = ViewBag.TotalEmployeeCount;
+    var activeEmployees = ViewBag.ActiveEmployeeCount;
+    var totalSalary = ViewBag.TotalSalary;
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/css/employee-page.css" />
+}
+
+<!-- Stats Section -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="total">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-people-fill me-2"></i>Total Employees
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@totalEmployees</h3>
+                        <small class="text-muted">registered</small>
+                    </div>
+                </div>
+                <i class="bi bi-people-fill icon text-primary"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="active">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-person-check-fill me-2"></i>Active Employees
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@activeEmployees</h3>
+                        <small class="text-muted">@(Math.Round((double)activeEmployees / totalEmployees * 100))% of total</small>
+                    </div>
+                </div>
+                <i class="bi bi-person-check-fill icon text-success"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="salary">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-currency-rupee me-2"></i>Total Salary
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">₹@totalSalary.ToString("N0")</h3>
+                        <small class="text-muted">monthly expense</small>
+                    </div>
+                </div>
+                <i class="bi bi-currency-rupee icon text-info"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card filter-card shadow-sm mb-4 slide-in">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel-fill me-2"></i>Filter Employees
+            </h5>
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Add New Employee
+            </a>
+        </div>
+        <form method="get" asp-action="Index">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label for="SearchTerm" class="form-label">
+                            <i class="bi bi-search me-2"></i>Search Employees
+                        </label>
+                        <div class="search-input-group input-group">
+                            <span class="input-group-text border-end-0 bg-transparent">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" id="SearchTerm" name="SearchTerm" class="form-control border-start-0"
+                            value="@filter?.SearchTerm" placeholder="Search by name, email, or Aadhar Number...">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="Position" class="form-label">Position:</label>
+                        <select id="Position" name="Position" class="form-select">
+                            <option value="">All Positions</option>
+                            @foreach (var position in ViewBag.Positions)
+                            {
+                                <option value="@position" selected="@(filter?.Position == position)">@position</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="Gender" class="form-label">Gender:</label>
+                        <select id="Gender" name="Gender" class="form-select">
+                            <option value="">All Genders</option>
+                            <option value="Male" selected="@(filter?.Gender == "Male")">Male</option>
+                            <option value="Female" selected="@(filter?.Gender == "Female")">Female</option>
+                            <option value="Other" selected="@(filter?.Gender == "Other")">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="Status" class="form-label">Status:</label>
+                        <select id="Status" name="Status" class="form-select">
+                            <option value="All" selected="@(filter?.Status == "All")">All Status</option>
+                            <option value="Active" selected="@(filter?.Status == "Active")">Active</option>
+                            <option value="Inactive" selected="@(filter?.Status == "Inactive")">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100" style="margin-top: 2rem;">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table Section -->
+<div class="card shadow-sm scale-in">
+    <div class="card-header bg-light py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-list-ul me-2"></i>Employee List
+            </h6>
+            <div class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Showing @Model.Items.Count() of @Model.TotalCount employees
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @* When there is no employees for provided filter *@
+        @if (!Model.Items.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-people"></i>
+                <h5 class="mt-3">No employees found</h5>
+                <p class="text-muted">Try adjusting your search or filter criteria</p>
+                <a asp-action="Create" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Employee
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive p-3">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 70px;">Id</th>
+                            <th style="min-width: 200px;">Employee Details</th>
+                            <th style="min-width: 120px;">Age / Gender</th>
+                            <th style="min-width: 150px;">Contact Info</th>
+                            <th style="min-width: 150px;">Position / Salary</th>
+                            <th style="min-width: 100px;">Status</th>
+                            <th class="text-end" style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var employee in Model.Items)
+                        {
+                            <tr class="animate__animated animate__fadeIn"
+                            style="animation-delay: @(Model.Items.ToList().IndexOf(employee) * 0.05)s">
+                                <td class="text-center align-middle">
+                                    <span class="text-muted">#@employee.EmployeeId</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="employee-avatar">
+                                            <i class="bi bi-person text-primary"></i>
+                                        </div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-1">@employee.Name</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-credit-card me-1"></i>@employee.AdharNo
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">@employee.Age years</span>
+                                        <small class="text-muted">
+                                            @if(employee.Gender == "Male"){
+                                                <i class="bi bi-gender-male me-1"></i>@employee.Gender
+                                            }
+                                            else if (employee.Gender == "Female")
+                                            {
+                                                <i class="bi bi-gender-female me-1"></i>@employee.Gender
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-gender-ambiguous me-1"></i>@employee.Gender
+                                            }
+                                            @* <i class="bi bi-gender-ambiguous me-1"></i>@employee.Gender *@
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">
+                                            <i class="bi bi-phone me-1"></i>@employee.MobileNo
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>@employee.Email
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">@employee.Position</span>
+                                        <small class="text-muted">
+                                            <i class="bi bi-currency-rupee me-1"></i>@employee.Salary.ToString("N0")
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!employee.IsDeleted)
+                                    {
+                                        <span class="badge bg-gradient-success scale-in">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-gradient-danger scale-in">
+                                            <i class="bi bi-x-circle-fill me-1"></i>Inactive
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           asp-action="Edit"
+                                           asp-route-employeeId="@employee.EmployeeId"
+                                           data-bs-toggle="tooltip"
+                                           title="Edit employee details">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a> &nbsp;&nbsp
+                                        <form method="post"
+                                              asp-action="ToggleStatus"
+                                              asp-route-employeeId="@employee.EmployeeId"
+                                              class="d-inline"
+                                              onsubmit="return confirmStatusChange('@(employee.IsDeleted ? "restore" : "remove")', '@employee.Name', event)">
+                                            <button type="submit"
+                                                    class="btn btn-sm @(employee.IsDeleted ? "btn-outline-success" : "btn-outline-danger")"
+                                                    data-bs-toggle="tooltip"
+                                                    title="@(employee.IsDeleted ? "Restore employee to active status" : "Mark employee as inactive")">
+                                                <i class="bi @(employee.IsDeleted ? "bi bi-arrow-clockwise" : "bi bi-trash")"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Page @Model.PageNumber of @Model.TotalPages
+                    </div>
+                    <nav>
+                        <ul class="pagination">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="1"
+                                       asp-route-searchTerm="@filter?.SearchTerm"
+                                       asp-route-position="@filter?.Position"
+                                       asp-route-gender="@filter?.Gender"
+                                       asp-route-status="@filter?.Status">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-searchTerm="@filter?.SearchTerm"
+                                       asp-route-position="@filter?.Position"
+                                       asp-route-gender="@filter?.Gender"
+                                       asp-route-status="@filter?.Status">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item active">
+                                <span class="page-link">@Model.PageNumber</span>
+                            </li>
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-searchTerm="@filter?.SearchTerm"
+                                       asp-route-position="@filter?.Position"
+                                       asp-route-gender="@filter?.Gender"
+                                       asp-route-status="@filter?.Status">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@Model.TotalPages"
+                                       asp-route-searchTerm="@filter?.SearchTerm"
+                                       asp-route-position="@filter?.Position"
+                                       asp-route-gender="@filter?.Gender"
+                                       asp-route-status="@filter?.Status">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/js/employee.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Display notifications if TempData exists
+    @if (TempData["Success"] != null)
+    {
+        <text>
+                showNotification('success', '@TempData["Success"]');
+        </text>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <text>
+                showNotification('info', '@TempData["Info"]');
+        </text>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <text>
+                showNotification('error', '@TempData["Error"]');
+        </text>
+    }
+
+        // Auto-submit filter changes
+        const filterForm = document.querySelector('form');
+        const filterSelects = filterForm.querySelectorAll('select');
+        const searchInput = document.getElementById('SearchTerm');
+
+        filterSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                filterForm.submit();
+            });
+        });
+
+        // Debounce search input
+        let searchTimeout;
+        searchInput?.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 700);
+        });
+    });    
+    
+    // Status change confirmation using SweetAlert2
+    async function confirmStatusChange(action, employeeName, event) {
+        event.preventDefault(); // Prevent form submission
+        const form = event.target.closest('form');
+
+        const result = await showDeleteConfirmation(action, employeeName);
+        if (result.isConfirmed && form) {
+            form.submit(); // Submit form only if user confirmed
+        }
+        return false; // Prevent default form submission
+    }
+</script>
+
+

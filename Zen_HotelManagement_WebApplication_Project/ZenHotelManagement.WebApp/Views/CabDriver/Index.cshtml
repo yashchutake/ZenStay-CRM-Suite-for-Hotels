@@ -1,0 +1,402 @@
+﻿@model ZenHotelManagement.WebApp.Models.ViewModel.PagedList<ZenHotelManagement.WebApp.Models.CabDriver>
+
+@section Styles {
+<link rel="stylesheet" href="~/css/cab-driver.css" />
+}
+
+@{
+    var totalDrivers = Model.TotalCount;
+    var activeDrivers = ViewBag.ActiveCabDrivers;
+    var availableDrivers = ViewBag.AvailableCabDrivers;
+    ViewData["ActiveTab"] = "CabDrivers";
+}
+
+<!-- Stats Section -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="total">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-people-fill me-2 text-primary"></i>Total Drivers
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@totalDrivers</h3>
+                        <small class="text-muted">registered</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="active">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-person-check-fill me-2  text-success"></i>Active Drivers
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2 ">@activeDrivers</h3>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="available">
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-car-front-fill me-2 icon text-info"></i>Available Now
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@availableDrivers</h3>
+                        <small class="text-muted">ready for service</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card filter-card shadow-sm mb-4 slide-in">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel-fill me-2"></i>Filter Drivers
+            </h5>
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Add New Driver
+            </a>
+        </div>
+        <form method="get" asp-action="Index">           
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="SearchTerm" class="form-label">
+                            <i class="bi bi-search me-2"></i>Search Drivers
+                        </label>
+                        <div class="search-input-group input-group">
+                            <span class="input-group-text border-end-0 bg-transparent">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" id="SearchTerm" name="SearchTerm" class="form-control border-start-0"
+                                   value="@(ViewBag.CurrentFilter?.SearchTerm)" placeholder="Search by name, car vendor, or type...">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="CarVendor" class="form-label">Car Vendor:</label>
+                        <select id="CarVendor" name="CarVendor" class="form-select">
+                            <option value="">All Vendors</option>
+                            @foreach (var vendor in ViewBag.CarVendors ?? new List<string>())
+                            {
+                                <option value="@vendor" selected="@(vendor == ViewBag.CurrentFilter?.CarVendor)">@vendor</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="CarType" class="form-label">Car Type:</label>
+                        <select id="CarType" name="CarType" class="form-select">
+                            <option value="">All Types</option>
+                            @foreach (var type in ViewBag.CarTypes ?? new List<string>())
+                            {
+                                <option value="@type" selected="@(type == ViewBag.CurrentFilter?.CarType)">@type</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="IsCurrent" class="form-label">Status:</label>
+                        <select id="IsCurrent" name="IsCurrent" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="true" selected="@(ViewBag.CurrentFilter?.IsCurrent == true)">Current</option>
+                            <option value="false" selected="@(ViewBag.CurrentFilter?.IsCurrent == false)">Past</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table Section -->
+<div class="card shadow-sm scale-in">
+    <div class="card-header bg-light py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-list-ul me-2"></i>Cab Driver List
+            </h6>
+            <div class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Showing @Model.Items.Count() of @Model.TotalCount drivers
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <!-- Empty state -->
+        @if (!Model.Items.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-car-front"></i>
+                <h5 class="mt-3">No drivers found</h5>
+                <p class="text-muted">Try adjusting your search or filter criteria</p>
+                <a asp-action="Create" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Driver
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive p-3">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 70px;">Id</th>
+                            <th style="min-width: 250px;">Driver Details</th>
+                            <th style="min-width: 120px;">Age / Gender</th>
+                            <th style="min-width: 200px;">Vehicle Info</th>
+                            <th style="min-width: 140px;">Status</th>
+                            <th class="text-end" style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>                    
+                        @foreach (var driver in Model.Items)
+                        {
+                            <tr class="animate__animated animate__fadeIn" 
+                                style="animation-delay: @(Model.Items.ToList().IndexOf(driver) * 0.05)s">
+                                @* <td class="text-center align-middle"> *@
+                                @*     <span class="text-muted">#</span> *@
+                                @* </td> *@
+                                <td>
+                                    <span class="badge bg-info">@driver.CabDriverId</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="driver-avatar">
+                                            <i class="bi bi-person text-primary"></i>
+                                        </div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-1">@driver.Name</h6>
+                                          
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">@driver.Age years</span>
+                                        <small class="text-muted">
+                                            @if (driver.Gender == "Male")
+                                            {
+                                                <i class="bi bi-gender-male me-1"></i>@driver.Gender
+                                            }
+                                            else if (driver.Gender == "Female")
+                                            {
+                                                <i class="bi bi-gender-female me-1"></i>@driver.Gender
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-gender-ambiguous me-1"></i>@driver.Gender
+                                            }
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">@driver.CarVendor</span>
+                                        <small class="text-muted">
+                                            <i class="bi bi-car-front me-1"></i>@driver.CarType
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!driver.IsDeleted)
+                                    {
+                                        <span class="badge scale-in @(driver.IsAvailable ? "bg-gradient-success" : "bg-gradient-primary")"
+                                              data-bs-toggle="tooltip" 
+                                              title="@(driver.IsAvailable ? "Available for service" : "Currently on duty")">
+                                            <i class="bi @(driver.IsAvailable ? "bi-check-circle-fill" : "bi-clock-fill") me-1"></i>
+                                            @(driver.IsAvailable ? "Available" : "On Duty")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary opacity-75 scale-in"
+                                              data-bs-toggle="tooltip" 
+                                              title="This driver is currently inactive">
+                                            <i class="bi bi-dash-circle-fill me-1"></i>
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           asp-action="Edit" 
+                                           asp-route-cabDriverId="@driver.CabDriverId"
+                                           data-bs-toggle="tooltip" 
+                                           title="Edit driver details">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a> &nbsp&nbsp
+                                        <form method="post" 
+                                              asp-action="ToggleStatus" 
+                                              asp-route-cabDriverId="@driver.CabDriverId" 
+                                              class="d-inline" 
+                                              onsubmit="return confirmStatusChange('@(driver.IsDeleted ? "restore" : "remove")', '@driver.Name', event)">
+                                            <button type="submit" 
+                                                    class="btn btn-sm @(driver.IsDeleted ? "btn-outline-success" : "btn-outline-danger")"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="@(driver.IsDeleted ? "Restore driver to active status" : "Mark driver as inactive")">
+                                                <i class="bi @(driver.IsDeleted ? "bi bi-arrow-clockwise" : "bi bi-trash")"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Page @Model.PageNumber of @Model.TotalPages
+                    </div>
+                    <nav>
+                        <ul class="pagination">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="1"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-carVendor="@ViewBag.CurrentFilter?.CarVendor"
+                                       asp-route-carType="@ViewBag.CurrentFilter?.CarType"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-carVendor="@ViewBag.CurrentFilter?.CarVendor"
+                                       asp-route-carType="@ViewBag.CurrentFilter?.CarType"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item active">
+                                <span class="page-link">@Model.PageNumber</span>
+                            </li>
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-carVendor="@ViewBag.CurrentFilter?.CarVendor"
+                                       asp-route-carType="@ViewBag.CurrentFilter?.CarType"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@Model.TotalPages"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-carVendor="@ViewBag.CurrentFilter?.CarVendor"
+                                       asp-route-carType="@ViewBag.CurrentFilter?.CarType"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/js/notification.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Display notifications if TempData exists
+    @if (TempData["Success"] != null)
+    {
+        <text>
+                showNotification('success', '@TempData["Success"]');
+        </text>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <text>
+                showNotification('info', '@TempData["Info"]');
+        </text>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <text>
+                showNotification('error', '@TempData["Error"]');
+        </text>
+    }
+
+        // Auto-submit filter changes
+        const filterForm = document.querySelector('form');
+        const filterSelects = filterForm.querySelectorAll('select');
+        const searchInput = document.getElementById('SearchTerm');
+
+        filterSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                filterForm.submit();
+            });
+        });
+
+        // Debounce search input
+        let searchTimeout;
+        searchInput?.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 500);
+        });
+    });      
+    
+    // Status change confirmation using SweetAlert2
+        function confirmStatusChange(action, driverName, event) {
+            event.preventDefault(); // Prevent immediate form submission
+            const form = event.target.closest('form');
+            
+            showDeleteConfirmation(action, driverName).then((result) => {
+                if (result.isConfirmed && form) {
+                    form.submit(); // Submit the form if user confirmed
+                }
+            });
+            
+            return false; // Prevent default form submission
+        }
+</script>

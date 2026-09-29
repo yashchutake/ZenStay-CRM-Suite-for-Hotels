@@ -1,0 +1,500 @@
+/* 
+ * Admin Dashboard Styles
+ * Specific styles for the Admin Dashboard view
+ */
+
+/* Dashboard Container */
+.p-4{
+    padding: 1rem !important;
+}
+.admin-dashboard .dashboard-container {
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    padding: 0rem;  
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.admin-dashboard .page-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.admin-dashboard .stats-card {
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.admin-dashboard .stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.admin-dashboard .stats-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.admin-dashboard .stats-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.admin-dashboard .stats-section {
+    margin-bottom: 0.75rem;
+}
+
+.admin-dashboard .stats-section .card-body {
+    padding: 0.75rem;
+}
+
+.admin-dashboard .stats-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-dashboard .stats-icon i {
+    transition: transform 0.3s ease;
+}
+
+.admin-dashboard .stats-card:hover .stats-icon i {
+    transform: scale(1.1);
+}
+
+/* Widget Sections */
+.admin-dashboard .widgets-row {
+    flex: 1;
+    display: flex;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.admin-dashboard .left-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.admin-dashboard .right-column {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.admin-dashboard .widget-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-dashboard .widget-header {
+    padding: 0.5rem 1rem 0.375rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.admin-dashboard .widget-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #475569;
+    margin: 0;
+    letter-spacing: 0.025em;
+}
+
+.admin-dashboard .widget-body {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Quick Actions Widget - Reduced size */
+.admin-dashboard .quick-actions-widget {
+    flex: 0 0 auto;
+}
+
+.admin-dashboard .quick-actions-widget .widget-body {
+    padding: 0.75rem 1rem;
+}
+
+.admin-dashboard .quick-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.admin-dashboard .action-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    cursor: pointer;
+    height: 2rem;
+}
+
+.admin-dashboard .action-btn.primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+}
+
+.admin-dashboard .action-btn.secondary {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+}
+
+.admin-dashboard .action-btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Room Cleaning Widget */
+.admin-dashboard .room-cleaning-widget {
+    flex: 1;
+    min-height: 0;
+}
+
+.admin-dashboard .room-cleaning-widget .widget-body {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-dashboard .table-container {
+    flex: 1;
+    overflow: hidden;
+    height: 190px; /* Compact height: Header (30px) + 5 rows (32px each) = 190px */
+    border: 1px solid #e2e8f0;
+}
+
+.admin-dashboard .table {
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.admin-dashboard .table th {
+    border: none;
+    font-weight: 600;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.4rem 0.7rem;
+    background: #f8fafc;
+    height: 30px;
+    line-height: 1;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    color: #475569;
+}
+
+.admin-dashboard .table th:first-child {
+    border-top-left-radius: 0.5rem;
+}
+
+.admin-dashboard .table th:last-child {
+    border-top-right-radius: 0.5rem;
+}
+
+.admin-dashboard .table td {
+    padding: 0.5rem 0.7rem;
+    vertical-align: middle;
+    height: 36px;
+    line-height: 1.2;
+    border-bottom: 1px solid #f1f5f9;
+    background: white;
+    transition: background-color 0.15s ease;
+}
+
+.admin-dashboard .table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+.admin-dashboard .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-dashboard .table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+
+.admin-dashboard .table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
+}
+
+/* Optimized column width distribution with increased room number width for better readability */
+.admin-dashboard .table th:nth-child(1),
+.admin-dashboard .table td:nth-child(1) {
+    width: 25%;
+    text-align: left;
+    font-weight: 600;
+    color: #6366f1;
+    font-size: 0.75rem;
+    padding-left: 1rem;
+}
+
+.admin-dashboard .table th:nth-child(2),
+.admin-dashboard .table td:nth-child(2) {
+    width: 23%;
+    font-weight: 500;
+    color: #475569;
+    padding-left: 1rem;
+}
+
+.admin-dashboard .table th:nth-child(3),
+.admin-dashboard .table td:nth-child(3) {
+    width: 20%;
+    text-align: center;
+}
+
+.admin-dashboard .table th:nth-child(4),
+.admin-dashboard .table td:nth-child(4) {
+    width: 32%;
+    text-align: center;
+}
+
+.admin-dashboard .badge {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6rem;
+    line-height: 1;
+    border-radius: 5px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+}
+
+.admin-dashboard .badge.bg-success {
+    background: #10b981 !important;
+    color: white;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+.admin-dashboard .badge.bg-danger {
+    background: #f43f5e !important;
+    color: white;
+    box-shadow: 0 1px 3px rgba(244, 63, 94, 0.2);
+}
+
+.admin-dashboard .clean-room-btn {
+    transition: all 0.2s ease;
+    font-size: 0.6rem;
+    font-weight: 500;
+    padding: 0.3rem 0.6rem;
+    line-height: 1;
+    height: auto;
+    min-height: 24px;
+    border-radius: 0.35rem;
+    border: none;
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+    letter-spacing: 0.2px;
+    text-transform: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 90px;
+}
+
+.admin-dashboard .clean-room-btn:disabled {
+    background: #94a3b8 !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: white !important;
+}
+
+.admin-dashboard .clean-room-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+    background: #4f46e5;
+}
+
+.admin-dashboard .clean-room-btn:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+}
+
+.admin-dashboard .widget-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 0.15rem 1rem;
+    background: #f8fafc;
+    text-align: right;
+    border-radius: 0 0 0.75rem 0.75rem;
+    min-height: auto;
+}
+
+.admin-dashboard .widget-footer .btn-link {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.15rem 0.35rem;
+    text-decoration: none;
+    color: #6366f1;
+    border-radius: 0.25rem;
+    transition: all 0.15s ease;
+    letter-spacing: 0.3px;
+}
+
+.admin-dashboard .widget-footer .btn-link:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #4f46e5;
+    text-decoration: none;
+}
+
+/* Chart Widget */
+.admin-dashboard .chart-widget {
+    flex: 1;
+    min-height: 0;
+}
+
+.admin-dashboard .chart-container {
+    flex: 1;
+    position: relative;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Chart Legend Styling */
+.admin-dashboard .chart-container canvas {
+    cursor: pointer;
+}
+
+/* Custom styling for hidden legend items */
+.admin-dashboard .chart-legend-hidden {
+    text-decoration: line-through !important;
+    opacity: 0.5 !important;
+    color: #999 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .admin-dashboard .widgets-row {
+        flex-direction: column;
+    }
+
+    .admin-dashboard .right-column {
+        flex: 1;
+    }
+
+    .admin-dashboard .chart-container {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-dashboard .dashboard-container {
+        padding: 0.5rem;
+        height: auto;
+        min-height: calc(100vh - 100px);
+    }
+
+    .admin-dashboard .stats-value {
+        font-size: 1.4rem;
+    }
+
+    .admin-dashboard .quick-actions-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .admin-dashboard .action-btn {
+        width: 100%;
+    }
+
+    .admin-dashboard .left-column,
+    .admin-dashboard .widgets-row {
+        gap: 0.5rem;
+    }
+
+    .admin-dashboard .chart-container {
+        min-height: 200px;
+    }
+
+    .admin-dashboard .table-container {
+        height: 196px; /* Reduced for mobile: Header (28px) + 5 rows (32px each) = 188px, with padding */
+    }
+
+    .admin-dashboard .table th {
+        padding: 0.3rem 0.6rem;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+
+    .admin-dashboard .table td {
+        padding: 0.3rem 0.6rem;
+        height: 32px;
+    }
+
+    .admin-dashboard .clean-room-btn {
+        font-size: 0.6rem;
+        padding: 0.25rem 0.5rem;
+        min-height: 24px;
+        min-width: 85px;
+    }
+
+    .admin-dashboard .badge {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.4rem;
+        min-width: 42px;
+    }
+
+    /* Adjust column widths for mobile */
+    .admin-dashboard .table th:nth-child(1),
+    .admin-dashboard .table td:nth-child(1) {
+        width: 18%;
+    }
+
+    .admin-dashboard .table th:nth-child(2),
+    .admin-dashboard .table td:nth-child(2) {
+        width: 22%;
+        padding-left: 0.8rem;
+    }
+
+    .admin-dashboard .table th:nth-child(3),
+    .admin-dashboard .table td:nth-child(3) {
+        width: 16%;
+    }
+
+    .admin-dashboard .table th:nth-child(4),
+    .admin-dashboard .table td:nth-child(4) {
+        width: 44%;
+    }
+}

@@ -1,0 +1,749 @@
+@model ZenHotelManagement.WebApp.Models.ViewModel.CustomerDetailsViewModel
+@using ZenHotelManagement.WebApp.Utilities
+
+@{
+    
+    ViewData["ActiveTab"] = "Customers";
+}
+
+@Html.AntiForgeryToken()
+
+@{
+    // Add custom badge styles
+    Html.Raw(BookingStatusBadge.GenerateBadgeStyles());
+}
+
+
+<script src="~/js/notification.js"></script>
+
+
+<!-- Customer Details Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <div class="avatar-lg bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+            <i class="bi bi-person-fill text-primary fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0">@Model.Customer.Name</h2>
+            <small class="text-muted">Customer ID: @Model.Customer.CustomerId</small>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        @{
+            var hasCheckedInBookings = Model.GroupedRoomBookings.SelectMany(g => g).Any(b => 
+                string.Equals(b.BookingStatus, "Checked In", StringComparison.OrdinalIgnoreCase) || 
+                string.Equals(b.BookingStatus, "Checked-In", StringComparison.OrdinalIgnoreCase));
+        }
+        @if (hasCheckedInBookings)
+        {
+            <a href="@Url.Action("Checkout", "Customer", new { customerId = Model.Customer.CustomerId })" 
+               class="btn btn-success">
+                <i class="bi bi-credit-card me-1"></i>
+                Checkout & Payment
+            </a>
+        }
+        
+        <a href="@Url.Action("Edit", "Customer", new { customerId = Model.Customer.CustomerId })" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>
+            Edit
+        </a>
+        <a href="@Url.Action("Index", "Customer")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+    </div>
+</div>
+
+<!-- Alerts Section -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>    </div>
+}
+
+<!-- Customer Information Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header border-0 bg-white">
+        <h5 class="mb-0 text-muted">
+            <i class="bi bi-person-badge me-2"></i>Customer Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="info-group">
+                    <label class="text-muted small">Full Name</label>
+                    <p class="mb-3 fw-medium">@Model.Customer.Name</p>
+                </div>
+                <div class="info-group">
+                    <label class="text-muted small">Gender</label>
+                    <p class="mb-3">@(Model.Customer.Gender?.ToLower() == "male" ? "Male" : Model.Customer.Gender?.ToLower() == "female" ? "Female" : Model.Customer.Gender)</p>
+                </div>
+                <div class="info-group">
+                    <label class="text-muted small">ID Type</label>
+                    <p class="mb-3">@Model.Customer.IdType</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-group">
+                    <label class="text-muted small">Mobile Number</label>
+                    <p class="mb-3">@Model.Customer.MobileNo</p>
+                </div>
+                <div class="info-group">
+                    <label class="text-muted small">Address</label>
+                    <p class="mb-3">@(Model.Customer.Address ?? "N/A")</p>
+                </div>
+                <div class="info-group">
+                    <label class="text-muted small">Country</label>
+                    <p class="mb-3">@(Model.Customer.Country ?? "N/A")</p>
+                </div>
+            </div>
+        </div>    </div>
+</div>
+
+<!-- Recent Bookings Summary -->
+@if (Model.GroupedRoomBookings?.Any() == true || Model.GroupedCabBookings?.Any() == true)
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-header border-0 bg-white">
+            <h5 class="mb-0 text-muted">
+                <i class="bi bi-clock-history me-2"></i>Recent Booking Activity
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Recent Room Bookings</h6>
+                    @if (Model.GroupedRoomBookings != null && Model.GroupedRoomBookings.Any())
+                    {
+                        @foreach (var group in Model.GroupedRoomBookings.Take(3))
+                        {
+                            @foreach (var booking in group.Take(1))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                    <div>
+                                        <span class="fw-medium">Room @(booking.Room?.RoomNo ?? booking.RoomId.ToString())</span>
+                                        <br>
+                                        <small class="text-muted">@booking.CheckInDate.ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-medium">₹@((booking.TotalAmount ?? 0).ToString("N0"))</span>
+                                        <br>
+                                        <span class="badge bg-@(booking.BookingStatus == "Completed" ? "success" : "warning")-subtle text-@(booking.BookingStatus == "Completed" ? "success" : "warning")">
+                                            @booking.BookingStatus
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No room bookings found</p>
+                    }
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Recent Cab Bookings</h6>
+                    @if (Model.GroupedCabBookings != null && Model.GroupedCabBookings.Any())
+                    {
+                        @foreach (var group in Model.GroupedCabBookings.Take(3))
+                        {
+                            @foreach (var booking in group.Take(1))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                    <div>
+                                        <span class="fw-medium">@booking.PickUpLocation</span>
+                                        <br>
+                                        <small class="text-muted">@booking.PickUpDateTime.ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-medium">₹@booking.Fare.ToString("N0")</span>
+                                        <br>
+                                        <span class="badge bg-@((booking.IsRideCompleted ?? false) ? "success" : "warning")-subtle text-@((booking.IsRideCompleted ?? false) ? "success" : "warning")">
+                                            @((booking.IsRideCompleted ?? false) ? "Completed" : "Pending")
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No cab bookings found</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Room Bookings Section -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header border-0 bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-muted">
+            <i class="bi bi-building me-2"></i>Room Bookings
+        </h5>
+        <span class="badge bg-light text-muted">@Model.GroupedRoomBookings.Sum(g => g.Count()) Total</span>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.GroupedRoomBookings.Any())
+        {
+            <div class="booking-list">
+                @foreach (var dateGroup in Model.GroupedRoomBookings)
+                {
+                    <div class="date-group mb-4">
+                        <div class="date-header px-3 py-2 bg-light border-bottom">
+                            <h6 class="mb-0 text-muted">
+                                <i class="bi bi-calendar-date me-2"></i>
+                                Check-in Date: @dateGroup.Key.ToString("MMMM dd, yyyy")
+                                <span class="badge bg-primary ms-2">@dateGroup.Count() booking(s)</span>
+                            </h6>
+                        </div>                        @foreach (var booking in dateGroup.OrderBy(b => b.CheckInDate))
+                        {
+                            var isCheckedIn = string.Equals(booking.BookingStatus, "Checked In", StringComparison.OrdinalIgnoreCase) || 
+                                               string.Equals(booking.BookingStatus, "Checked-In", StringComparison.OrdinalIgnoreCase);
+                            var isConfirmed = string.Equals(booking.BookingStatus, "Confirmed", StringComparison.OrdinalIgnoreCase);
+                            
+                            <div class="booking-item border-bottom">
+                                <div class="row align-items-center py-3 px-3">                                    <div class="col-md-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="room-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                                <i class="bi bi-door-open text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Room @(booking.Room?.RoomNo ?? booking.RoomId.ToString())</h6>
+                                                <small class="text-muted">ID: @booking.BookingId</small>
+                                                @if (booking.Room != null)
+                                                {
+                                                    <br>
+                                                    <span class="badge bg-info-subtle text-info">@booking.Room.RoomType</span>
+                                                    @if (booking.Room.IsAc)
+                                                    {
+                                                        <span class="badge bg-primary-subtle text-primary ms-1">AC</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>                                    <div class="col-md-4">
+                                        <div class="booking-details">
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-calendar-check me-1 text-muted"></i>
+                                                <small>@booking.CheckInDate.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                            </div>
+                                            @if (booking.CheckOutDate.HasValue)
+                                            {
+                                                <div class="detail-item mb-1">
+                                                    <i class="bi bi-calendar-x me-1 text-muted"></i>
+                                                    <small>@booking.CheckOutDate.Value.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                                </div>
+                                                var nights = Math.Max(1, (booking.CheckOutDate.Value.Date - booking.CheckInDate.Date).Days);
+                                                <div class="detail-item mb-1">
+                                                    <i class="bi bi-moon me-1 text-muted"></i>
+                                                    <small>@nights night@(nights != 1 ? "s" : "")</small>
+                                                </div>
+                                            }
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-people me-1 text-muted"></i>
+                                                <small>@booking.NumberOfGuests guests</small>
+                                                @if (booking.Room != null && booking.NumberOfGuests > booking.Room.RoomCapacity)
+                                                {
+                                                    <span class="badge bg-warning-subtle text-warning ms-1">Over capacity</span>
+                                                }
+                                            </div>
+                                            @if (booking.Room != null)
+                                            {
+                                                <div class="detail-item">
+                                                    <i class="bi bi-currency-rupee me-1 text-muted"></i>
+                                                    <small>₹@booking.Room.CostPerNight.ToString("N0")/night</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="booking-financial">
+                                            <div class="mb-1">
+                                                <small class="text-muted">Total: </small>
+                                                <span class="fw-medium">₹@(booking.TotalAmount?.ToString("N2") ?? "0.00")</span>
+                                            </div>                                            <div class="mb-1">
+                                                <small class="text-muted">Paid: </small>
+                                                <span>₹@(booking.AmountPaid.ToString("N2"))</span>
+                                            </div>
+                                            @if ((booking.TotalAmount ?? 0) - booking.AmountPaid > 0 && 
+                                                 booking.BookingStatus != "Completed" && 
+                                                 booking.BookingStatus != "Cancelled" && 
+                                                 booking.BookingStatus != "Checked Out" && 
+                                                 booking.BookingStatus != "Checked-Out")
+                                            {
+                                                <div class="text-info">
+                                                    <small>Due: ₹@(((booking.TotalAmount ?? 0) - booking.AmountPaid).ToString("N2"))</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <div class="d-flex flex-column align-items-end gap-2">
+                                            @await Html.PartialAsync("_StatusBadge", null, new ViewDataDictionary(ViewData)
+                                            {
+                                                ["Status"] = booking.BookingStatus,
+                                                ["BadgeType"] = "room",
+                                                ["Size"] = "sm"
+                                            })
+                                            <div class="booking-actions">
+                                                @if (isCheckedIn)
+                                                {
+                                                    <a href="@Url.Action("Checkout", "Customer", new { customerId = Model.Customer.CustomerId, bookingId = booking.BookingId })" 
+                                                       class="btn btn-sm btn-success">
+                                                        <i class="bi bi-credit-card me-1"></i>
+                                                        Checkout
+                                                    </a>
+                                                }
+                                                @if (isConfirmed)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="confirmCancelBooking(@booking.BookingId, '@Model.Customer.CustomerId')">
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        Cancel
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="bi bi-building display-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">No Room Bookings Found</h5>
+                    <p class="text-muted">This customer has no room booking history.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div><!-- Cab Bookings Section -->
+<div class="card shadow-sm">
+    <div class="card-header border-0 bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-muted">
+            <i class="bi bi-car-front me-2"></i>Cab Bookings
+        </h5>
+        <span class="badge bg-light text-muted">@Model.GroupedCabBookings.Sum(g => g.Count()) Total</span>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.GroupedCabBookings.Any())
+        {
+            <div class="booking-list">
+                @foreach (var dateGroup in Model.GroupedCabBookings)
+                {
+                    <div class="date-group mb-4">
+                        <div class="date-header px-3 py-2 bg-light border-bottom">
+                            <h6 class="mb-0 text-muted">
+                                <i class="bi bi-calendar-date me-2"></i>
+                                Pickup Date: @dateGroup.Key.ToString("MMMM dd, yyyy")
+                                <span class="badge bg-info ms-2">@dateGroup.Count() booking(s)</span>
+                            </h6>
+                        </div>
+                        @foreach (var booking in dateGroup.OrderBy(b => b.PickUpDateTime))
+                        {
+                            <div class="booking-item border-bottom">
+                                <div class="row align-items-center py-3 px-3">
+                                    <div class="col-md-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="room-icon bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                                                <i class="bi bi-car-front text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Cab Booking</h6>
+                                                <small class="text-muted">ID: @booking.CabBookingId</small>
+                                            </div>
+                                        </div>
+                                    </div>                                    <div class="col-md-4">
+                                        <div class="booking-details">
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-geo-alt me-1 text-muted"></i>
+                                                <small>From: @booking.PickUpLocation</small>
+                                            </div>
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-geo-alt-fill me-1 text-muted"></i>
+                                                <small>To: @booking.DropOffLocation</small>
+                                            </div>
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-clock me-1 text-muted"></i>
+                                                <small>Pickup: @booking.PickUpDateTime.ToString("MMM dd, hh:mm tt")</small>
+                                            </div>
+                                            @{
+                                                var tripDuration = booking.DropOffDateTime - booking.PickUpDateTime;
+                                                var durationText = tripDuration.TotalHours >= 1 ? 
+                                                    $"{Math.Floor(tripDuration.TotalHours)}h {tripDuration.Minutes}m" : 
+                                                    $"{tripDuration.Minutes}m";
+                                            }
+                                            <div class="detail-item">
+                                                <i class="bi bi-stopwatch me-1 text-muted"></i>
+                                                <small>Duration: @durationText</small>
+                                            </div>
+                                        </div>
+                                    </div>                                    <div class="col-md-3">
+                                        <div class="booking-financial">
+                                            <div class="mb-1">
+                                                <small class="text-muted">Fare: </small>
+                                                <span class="fw-medium">₹@(booking.Fare.ToString("N2"))</span>
+                                            </div>
+                                            <div class="detail-item mb-1">
+                                                <i class="bi bi-clock-fill me-1 text-muted"></i>
+                                                <small>Drop: @booking.DropOffDateTime.ToString("MMM dd, hh:mm tt")</small>
+                                            </div>                                            @if (booking.CabDriverId != null && booking.CabDriverId > 0)
+                                            {
+                                                <div class="driver-info mt-2">
+                                                    <div class="driver-badge bg-success bg-opacity-10 px-2 py-1 rounded">
+                                                        <i class="bi bi-person-check text-success me-1"></i>
+                                                        <small class="text-success">Driver ID: @booking.CabDriverId</small>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        @await Html.PartialAsync("_StatusBadge", null, new ViewDataDictionary(ViewData) 
+                                        { 
+                                            ["IsCompleted"] = booking.IsRideCompleted,
+                                            ["BadgeType"] = "cab",
+                                            ["Size"] = "sm"
+                                        })
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="bi bi-car-front display-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">No Cab Bookings Found</h5>
+                    <p class="text-muted">This customer has no cab booking history.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.avatar-lg {
+    width: 60px;
+    height: 60px;
+}
+
+.info-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.booking-list .date-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.booking-item:last-child {
+    border-bottom: none !important;
+}
+
+.booking-item:hover {
+    background-color: #f8f9fa;
+}
+
+.room-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+}
+
+.booking-actions .btn {
+    margin-bottom: 0.25rem;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.alert {
+    border-radius: 0.75rem;
+    border: none;
+}
+
+/* Financial Cards Styling */
+.card.bg-gradient {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, rgba(var(--bs-primary-rgb), 0.8) 100%);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card.bg-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card.bg-success.bg-gradient {
+    background: linear-gradient(135deg, var(--bs-success) 0%, rgba(var(--bs-success-rgb), 0.8) 100%);
+}
+
+.card.bg-warning.bg-gradient {
+    background: linear-gradient(135deg, var(--bs-warning) 0%, rgba(var(--bs-warning-rgb), 0.8) 100%);
+}
+
+.card.bg-info.bg-gradient {
+    background: linear-gradient(135deg, var(--bs-info) 0%, rgba(var(--bs-info-rgb), 0.8) 100%);
+}
+
+.bg-white.bg-opacity-25 {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.text-white-75 {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.driver-badge {
+    font-size: 0.75rem;
+    border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+/* Enhanced booking cards */
+.booking-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.booking-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(4px);
+    border-left: 4px solid var(--bs-primary);
+}
+
+.date-header {
+    backdrop-filter: blur(10px);
+    background: rgba(248, 249, 250, 0.95) !important;
+    border-bottom: 2px solid #e9ecef !important;
+}
+
+/* Status badges enhancement */
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+/* Timeline Styling */
+.timeline {
+    position: relative;
+    padding: 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--bs-primary), var(--bs-info));
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 60px;
+    padding-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 8px;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    background: var(--bs-white);
+    border: 3px solid var(--bs-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    z-index: 2;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+.timeline-item.pending .timeline-marker {
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: white;
+}
+
+.timeline-content {
+    background: var(--bs-white);
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.2s ease-in-out;
+}
+
+.timeline-content:hover {
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+}
+
+/* Responsive adjustments */
+@@media (max-width: 768px) {
+    .card.bg-gradient .card-body {
+        padding: 1rem;
+    }
+    
+    .card.bg-gradient h4 {
+        font-size: 1.5rem;
+    }
+    
+    .booking-item .row {
+        flex-direction: column;
+    }
+    
+    .booking-item .col-md-2 {
+        margin-top: 1rem;
+        text-align: left !important;
+    }
+}
+</style>
+
+<script>    // Auto-hide only dismissible alerts (temporary notifications) after 5 seconds
+    setTimeout(function() {
+        const dismissibleAlerts = document.querySelectorAll('.alert.alert-dismissible');
+        dismissibleAlerts.forEach(function(alert) {
+            // Only hide if it's a success or info alert (not error/warning which should stay visible)
+            if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        });
+    }, 5000);
+
+    // Confirmation modal for booking cancellation
+    function confirmCancelBooking(bookingId, customerId) {
+        Swal.fire({
+            title: 'Cancel Booking?',
+            text: "Are you sure you want to cancel this booking? This action cannot be undone and may affect the customer's stay.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, cancel booking',
+            cancelButtonText: 'Keep booking',
+            customClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Create and submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("CancelBooking", "Customer")';
+                
+                // Add CSRF token
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+                
+                // Add booking ID
+                const bookingInput = document.createElement('input');
+                bookingInput.type = 'hidden';
+                bookingInput.name = 'bookingId';
+                bookingInput.value = bookingId;
+                form.appendChild(bookingInput);
+                
+                // Add customer ID
+                const customerInput = document.createElement('input');
+                customerInput.type = 'hidden';
+                customerInput.name = 'customerId';
+                customerInput.value = customerId;
+                form.appendChild(customerInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Show processing notification
+                showNotification('info', 'Processing booking cancellation...');
+            }
+        });
+    }
+
+    // Success message function
+    function showSuccessMessage(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="bi bi-check-circle-fill me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.insertBefore(alertDiv, document.body.firstChild);
+    }
+</script>

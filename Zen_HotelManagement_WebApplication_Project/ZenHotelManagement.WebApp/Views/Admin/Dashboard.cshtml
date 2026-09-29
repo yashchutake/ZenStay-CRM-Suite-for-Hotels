@@ -1,0 +1,313 @@
+﻿@using ZenHotelManagement.WebApp.Models
+
+@{
+    ViewData["ActiveTab"] = "Dashboard";
+}
+
+@section Styles {
+	<link rel="stylesheet" href="~/css/admin/dashboard.css" />
+}
+
+<div class="admin-dashboard">
+	<h2 class="page-title">Admin Dashboard</h2>
+
+	@if (TempData["Message"] != null)
+	{
+		var isAutoHide = TempData["AutoHide"] as bool? ?? true;
+		var hideDelay = TempData["HideDelay"] as int? ?? 2000;
+
+		<div class="alert alert-info alert-dismissible fade show" role="alert"
+			 id="successAlert"
+			 data-auto-hide="@isAutoHide.ToString().ToLower()"
+			 data-hide-delay="@hideDelay">
+			@TempData["Message"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	}
+
+	<div class="dashboard-container">
+		<!-- Stats Cards Section -->
+		<div class="stats-section">
+			<div class="row g-2">
+				<div class="col-12 col-md-4">
+					<div class="card stats-card text-white shadow-sm" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<p class="stats-label">Total Employees</p>
+									<h2 class="stats-value mb-0">@ViewData["TotalEmployees"]</h2>
+								</div>
+								<div class="stats-icon">
+									<i class="fas fa-users"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-12 col-md-4">
+					<div class="card stats-card text-white shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669);">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<p class="stats-label">Total Rooms</p>
+									<h2 class="stats-value mb-0">@ViewData["TotalRooms"]</h2>
+								</div>
+								<div class="stats-icon">
+									<i class="fas fa-bed"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-12 col-md-4">
+					<div class="card stats-card text-white shadow-sm" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<p class="stats-label">Total Cab Drivers</p>
+									<h2 class="stats-value mb-0">@ViewData["TotalCabDrivers"]</h2>
+								</div>
+								<div class="stats-icon">
+									<i class="fas fa-car"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Dashboard Widgets Section -->
+		<div class="widgets-row">
+			<!-- Left Column: Quick Actions + Room Cleaning -->
+			<div class="left-column">
+				<!-- Quick Actions Widget -->
+				<div class="widget-card quick-actions-widget">
+					<div class="widget-header">
+						<h4 class="widget-title">Quick Actions</h4>
+					</div>
+					<div class="widget-body">
+						<div class="quick-actions-buttons">
+							<a href="/Employee/Create" class="action-btn primary">
+								<i class="fas fa-user-plus"></i>
+								Add Employee
+							</a>
+							<a href="/CabDriver/Create" class="action-btn secondary">
+								<i class="fas fa-car"></i>
+								Add Cab Driver
+							</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Room Cleaning Status Widget -->
+				<div class="widget-card room-cleaning-widget">
+					<div class="widget-header">
+						<h4 class="widget-title">Room Cleaning Status</h4>
+					</div>
+					<div class="widget-body">
+						<div class="table-container">
+							<table class="table table-hover mb-0">
+								<thead>
+									<tr>
+										<th>Room No.</th>
+										<th>Type</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									@{
+										var vacantRooms = ((List<Room>)ViewData["VacantRooms"]).Take(5);
+									}                                @foreach (var room in vacantRooms)
+									{
+										<tr>
+											<td>@room.RoomNo</td>
+											<td>@room.RoomType</td>
+											<td>
+												<span class="badge @(room.IsClean ? "bg-success" : "bg-danger")">
+													@(room.IsClean ? "Clean" : "Dirty")
+												</span>
+											</td>
+											<td>
+												<form asp-action="UpdateRoomCleanStatus" method="post" style="display: inline;"
+													  onsubmit="return confirmRoomCleaning('@room.RoomNo')">
+													<input type="hidden" name="roomNo" value="@room.RoomNo" />                                                <button type="submit" class="btn btn-primary clean-room-btn"
+													@(room.IsClean ? "disabled" : "")>
+														<i class="fas fa-check-circle"></i>
+														@(room.IsClean ? "Cleaned" : "Mark Clean")
+													</button>
+												</form>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>                <div class="widget-footer">
+						<a href="/Room/Index" class="btn btn-link text-primary">
+							<i class="fas fa-external-link-alt"></i>
+							View All Rooms
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Right Column: Department Chart -->
+			<div class="right-column">
+				<div class="widget-card chart-widget">
+					<div class="widget-header">
+						<h4 class="widget-title">Employees per Department</h4>
+					</div>
+					<div class="widget-body">
+						<div class="chart-container">
+							<canvas id="departmentChart"></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<script>
+		// Department Chart
+		const departmentData = @Html.Raw(ViewData["DepartmentData"]);        // Minimal modern color palette
+		const colors = [
+			'#6366f1', // Indigo
+			'#10b981', // Emerald
+			'#06b6d4', // Cyan
+			'#f59e0b', // Amber
+			'#8b5cf6', // Violet
+			'#ef4444'  // Red
+		];
+
+		const labels = Object.keys(departmentData);
+		const values = Object.values(departmentData);        const chartInstance = new Chart(document.getElementById('departmentChart'), {
+			type: 'doughnut',
+			data: {
+				labels: labels,
+				datasets: [{
+					data: values,
+					backgroundColor: colors.slice(0, labels.length),
+					borderWidth: 1
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'bottom',
+						display: true,
+						align: 'center',
+						maxHeight: 120,
+						maxWidth: 150,
+						onClick: function(e, legendItem, legend) {
+							const index = legendItem.index;
+							const ci = legend.chart;
+							const meta = ci.getDatasetMeta(0);
+
+							// Toggle visibility
+							meta.data[index].hidden = !meta.data[index].hidden;
+
+							// Update the chart
+							ci.update();
+
+							// Apply strikethrough effect to legend text
+							setTimeout(() => {
+								const legendContainer = ci.canvas.parentNode.querySelector('.chartjs-legend') ||
+													  ci.canvas.parentNode.nextElementSibling;
+								if (legendContainer) {
+									const legendItems = legendContainer.querySelectorAll('li');
+									if (legendItems[index]) {
+										const legendText = legendItems[index].querySelector('span');
+										if (legendText) {
+											if (meta.data[index].hidden) {
+												legendText.style.textDecoration = 'line-through';
+												legendText.style.opacity = '0.5';
+												legendText.style.color = '#999';
+											} else {
+												legendText.style.textDecoration = 'none';
+												legendText.style.opacity = '1';
+												legendText.style.color = '#666';
+											}
+										}
+									}
+								}
+							}, 10);
+						},
+						labels: {
+							padding: 20,
+							usePointStyle: true,
+							boxWidth: 8,
+							font: {
+								size: 11
+							},
+							generateLabels: function (chart) {
+								const datasets = chart.data.datasets[0];
+								const meta = chart.getDatasetMeta(0);
+
+								return chart.data.labels.map((label, i) => {
+									const isHidden = meta.data[i] && meta.data[i].hidden;
+									return {
+										text: label,
+										fillStyle: isHidden ? '#ccc' : datasets.backgroundColor[i],
+										strokeStyle: isHidden ? '#ccc' : datasets.backgroundColor[i],
+										pointStyle: 'circle',
+										index: i,
+										hidden: isHidden
+									};
+								});
+							}
+						}
+					}
+				},
+				layout: {
+					padding: {
+						bottom: 0,
+						top: 0
+					}
+				},
+				cutout: '65%',
+				radius: '90%',
+				onHover: function(event, activeElements) {
+					event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+				}
+			}
+		});        // Add custom CSS for legend styling after chart creation
+		setTimeout(() => {
+			const style = document.createElement('style');
+			style.textContent = `
+				.chartjs-legend li span {
+					transition: all 0.2s ease;
+				}
+				.chartjs-legend li:hover span {
+					opacity: 0.8;
+				}
+			`;
+			document.head.appendChild(style);
+		}, 100);        // Auto-hide success alert based on C# configuration
+		const successAlert = document.getElementById('successAlert');
+		if (successAlert) {
+			const autoHide = successAlert.getAttribute('data-auto-hide') === 'true';
+			const hideDelay = parseInt(successAlert.getAttribute('data-hide-delay')) || 2000;
+
+			if (autoHide) {
+				setTimeout(() => {
+					if (successAlert && !successAlert.classList.contains('d-none')) {
+						const bsAlert = new bootstrap.Alert(successAlert);
+						bsAlert.close();
+					}
+				}, hideDelay);
+			}
+		}
+
+		// Confirmation dialog for room cleaning
+		function confirmRoomCleaning(roomNo) {
+			return confirm(`Are you sure you want to mark Room ${roomNo} as cleaned?`);
+		}
+	</script>

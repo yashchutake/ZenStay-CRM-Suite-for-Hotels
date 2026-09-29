@@ -1,0 +1,46 @@
+@using ZenHotelManagement.WebApp.Utilities
+@{
+    string status = ViewData["Status"]?.ToString() ?? "";
+    string badgeType = ViewData["BadgeType"]?.ToString() ?? "room"; // room, cab, customer
+    string size = ViewData["Size"]?.ToString() ?? "md"; // sm, md, lg
+    bool showTooltip = ViewData["ShowTooltip"] as bool? ?? true;
+    
+    BookingStatusBadge.BadgeInfo badgeInfo;
+    
+    switch (badgeType.ToLower())
+    {
+        case "cab":
+            // For cab bookings, handle boolean completion status
+            if (ViewData["IsCompleted"] is bool isCompleted)
+            {
+                badgeInfo = BookingStatusBadge.GetCabBookingBadge(isCompleted);
+                status = isCompleted ? "Completed" : "Confirmed";
+            }
+            else
+            {
+                badgeInfo = BookingStatusBadge.GetCabBookingBadge(status);
+            }
+            break;
+        case "customer":
+            badgeInfo = BookingStatusBadge.GetCustomerStatusBadge(status);
+            break;
+        case "room":
+        default:
+            badgeInfo = BookingStatusBadge.GetRoomBookingBadge(status);
+            break;
+    }
+    
+    var sizeClass = size switch
+    {
+        "sm" => "badge-sm",
+        "lg" => "badge-lg", 
+        _ => ""
+    };
+    
+    var tooltipAttr = showTooltip ? $"title=\"{badgeInfo.Description}\"" : "";
+}
+
+<span class="badge @badgeInfo.CssClass @sizeClass" @Html.Raw(tooltipAttr)>
+    <i class="bi @badgeInfo.Icon me-1"></i>
+    @status
+</span>

@@ -1,0 +1,297 @@
+@model ZenHotelManagement.WebApp.Models.ViewModel.CustomerUpdateViewModel
+
+@{
+  
+    ViewData["ActiveTab"] = "Customers";
+}
+
+<script src="~/js/notification.js"></script>
+
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <div class="avatar-lg bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+            <i class="bi bi-person-gear text-primary fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0">Edit Customer</h2>
+            <small class="text-muted">Update customer information</small>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Details", "Customer", new { customerId = Model.CustomerId })" class="btn btn-outline-info">
+            <i class="bi bi-eye me-2"></i>View Details
+        </a>
+        <a href="@Url.Action("Index", "Customer")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Alerts Section -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header border-0 bg-white">
+        <h5 class="mb-0 text-muted">
+            <i class="bi bi-person-badge me-2"></i>Customer Information
+        </h5>
+    </div>
+    <div class="card-body">
+                    <form asp-action="Edit" method="post" id="editCustomerForm">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                          <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="CustomerId" class="form-control bg-light" readonly />
+                                    <label asp-for="CustomerId">
+                                        <i class="bi bi-credit-card me-1"></i>Customer ID
+                                    </label>
+                                    <div class="form-text">Customer ID cannot be changed</div>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <select asp-for="IdType" class="form-select" required>
+                                        <option value="">Choose...</option>
+                                        <option value="Aadhar Card">Aadhar Card</option>
+                                        <option value="PAN Card">PAN Card</option>
+                                        <option value="Driving License">Driving License</option>
+                                        <option value="Passport">Passport</option>
+                                        <option value="Voter ID">Voter ID</option>
+                                    </select>
+                                    <label asp-for="IdType">
+                                        <i class="bi bi-card-text me-1"></i>ID Type *
+                                    </label>
+                                    <span asp-validation-for="IdType" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Name" class="form-control" placeholder="Enter full name" required />
+                                    <label asp-for="Name">
+                                        <i class="bi bi-person me-1"></i>Full Name *
+                                    </label>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <select asp-for="Gender" class="form-select" required>
+                                        <option value="">Choose...</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <label asp-for="Gender">
+                                        <i class="bi bi-people me-1"></i>Gender *
+                                    </label>
+                                    <span asp-validation-for="Gender" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="MobileNo" class="form-control" placeholder="Enter mobile number" required />
+                                    <label asp-for="MobileNo">
+                                        <i class="bi bi-telephone me-1"></i>Mobile Number *
+                                    </label>
+                                    <div class="form-text">Format: +919876543210 or 9876543210</div>
+                                    <span asp-validation-for="MobileNo" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <textarea asp-for="Address" class="form-control" placeholder="Enter address" style="height: 100px"></textarea>
+                                    <label asp-for="Address">
+                                        <i class="bi bi-geo-alt me-1"></i>Address
+                                    </label>
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Country" class="form-control" placeholder="Enter country" />
+                                    <label asp-for="Country">
+                                        <i class="bi bi-globe me-1"></i>Country
+                                    </label>
+                                    <span asp-validation-for="Country" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                <small>
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Only customer details will be updated. Booking information remains unchanged.
+                                </small>
+                            </div>                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                                <button type="button" class="btn btn-primary" id="saveButton" onclick="confirmSave()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Customer Info Alert -->
+            <div class="alert alert-info mt-4" role="alert">
+                <div class="d-flex">
+                    <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                    <div>
+                        <h6 class="alert-heading">Important Notes:</h6>
+                        <ul class="mb-0">
+                            <li>Customer ID cannot be changed once created</li>
+                            <li>Only personal details can be updated through this form</li>
+                            <li>Room bookings and cab bookings are managed separately</li>
+                            <li>All required fields must be filled before saving</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    .form-label.fw-bold {
+        color: #495057;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        transform: translateY(-1px);
+    }
+
+    .alert {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+<script>
+    // Confirmation modal for saving changes
+    function confirmSave() {
+        const form = document.getElementById('editCustomerForm');
+        
+        // Check form validity
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Save Changes?',
+            text: 'Are you sure you want to update this customer information?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#007bff',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, save changes',
+            cancelButtonText: 'Cancel',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                const saveButton = document.getElementById('saveButton');
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...';
+                saveButton.disabled = true;
+                form.submit();
+            }
+        });
+    }    // Auto-hide only dismissible alerts (temporary notifications) after 5 seconds
+    setTimeout(function() {
+        const dismissibleAlerts = document.querySelectorAll('.alert.alert-dismissible');
+        dismissibleAlerts.forEach(function(alert) {
+            // Only hide if it's a success or info alert (not error/warning which should stay visible)
+            if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        });
+    }, 5000);
+
+    // Format mobile number on input
+    document.querySelector('input[name="MobileNo"]').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        
+        // Add + prefix if not present and number starts with country code
+        if (value.length > 10 && !value.startsWith('+')) {
+            e.target.value = '+' + value;
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    // Real-time validation feedback
+    document.querySelectorAll('input[required], select[required]').forEach(function(element) {
+        element.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        element.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+</script>
+
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -1,0 +1,139 @@
+@* _ValidationScriptsPartial.cshtml - Client-side validation *@
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    // Enhanced HTML5 validation for Bootstrap forms
+    (function() {
+        'use strict';
+        
+        // Add custom validation styles for better UX
+        function addValidationStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .was-validated .form-control:invalid {
+                    border-color: #dc3545;
+                    padding-right: calc(1.5em + 0.75rem);
+                    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+                    background-repeat: no-repeat;
+                    background-position: right calc(0.375em + 0.1875rem) center;
+                    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+                }
+                
+                .was-validated .form-control:valid {
+                    border-color: #198754;
+                    padding-right: calc(1.5em + 0.75rem);
+                    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.94-.94 1.69 1.69 3.37-3.37.94.94-4.31 4.31z'/%3e%3c/svg%3e");
+                    background-repeat: no-repeat;
+                    background-position: right calc(0.375em + 0.1875rem) center;
+                    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+                }
+                
+                .was-validated .form-select:invalid {
+                    border-color: #dc3545;
+                }
+                
+                .was-validated .form-select:valid {
+                    border-color: #198754;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Initialize validation when DOM is loaded
+        function initializeValidation() {
+            addValidationStyles();
+            
+            // Handle form submission with validation
+            document.addEventListener('submit', function(event) {
+                const form = event.target;
+                if (form.classList.contains('needs-validation')) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // Focus on first invalid field
+                        const firstInvalid = form.querySelector(':invalid');
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                        }
+                    }
+                    form.classList.add('was-validated');
+                }
+            });
+            
+            // Real-time validation feedback
+            document.addEventListener('input', function(event) {
+                const input = event.target;
+                if (input.classList.contains('form-control') || input.classList.contains('form-select')) {
+                    const form = input.closest('form');
+                    if (form && form.classList.contains('was-validated')) {
+                        // Trigger validation check
+                        input.checkValidity();
+                    }
+                }
+            });
+            
+            // Custom validation messages
+            document.addEventListener('invalid', function(event) {
+                const input = event.target;
+                if (input.validity.valueMissing) {
+                    input.setCustomValidity('This field is required.');
+                } else if (input.validity.typeMismatch) {
+                    if (input.type === 'email') {
+                        input.setCustomValidity('Please enter a valid email address.');
+                    } else if (input.type === 'tel') {
+                        input.setCustomValidity('Please enter a valid phone number.');
+                    }
+                } else if (input.validity.patternMismatch) {
+                    input.setCustomValidity('Please match the requested format.');
+                } else if (input.validity.rangeOverflow) {
+                    input.setCustomValidity(`Value must be ${input.max} or less.`);
+                } else if (input.validity.rangeUnderflow) {
+                    input.setCustomValidity(`Value must be ${input.min} or greater.`);
+                } else if (input.validity.tooLong) {
+                    input.setCustomValidity(`Please shorten this text to ${input.maxLength} characters or less.`);
+                } else if (input.validity.tooShort) {
+                    input.setCustomValidity(`Please lengthen this text to ${input.minLength} characters or more.`);
+                }
+            }, true);
+            
+            // Clear custom validity on input
+            document.addEventListener('input', function(event) {
+                event.target.setCustomValidity('');
+            });
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeValidation);
+        } else {
+            initializeValidation();
+        }
+    })();
+    
+    // jQuery validation enhancements
+    $(document).ready(function() {
+        // Override jQuery validation's step method for datetime-local inputs
+        if ($.validator && $.validator.methods && $.validator.methods.step) {
+            const originalStep = $.validator.methods.step;
+            
+            $.validator.methods.step = function(value, element, param) {
+                // For datetime-local inputs, bypass the step validation that causes issues
+                if (element.type === 'datetime-local') {
+                    return this.optional(element) || true;
+                }
+                
+                // For other input types, use the original step method
+                return originalStep.call(this, value, element, param);
+            };
+        }
+        
+        // Ensure all datetime-local inputs work properly
+        $('input[type="datetime-local"]').each(function() {
+            // Remove any problematic validation rules and let HTML5 handle it
+            $(this).rules('remove');
+        });
+    });
+</script>

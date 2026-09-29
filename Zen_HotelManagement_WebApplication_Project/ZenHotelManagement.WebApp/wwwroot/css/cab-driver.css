@@ -1,0 +1,29 @@
+/* Pagination Styles */
+.pagination {
+    margin: 0;
+    gap: 0.25rem;
+}
+
+.pagination .page-item .page-link {
+    border: none;
+    padding: 0.5rem 0.75rem;
+    color: #6c757d;
+    border-radius: 6px;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.pagination .page-item .page-link:hover {
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    color: white;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+.pagination .page-link i {
+    font-size: 0.875rem;
+}

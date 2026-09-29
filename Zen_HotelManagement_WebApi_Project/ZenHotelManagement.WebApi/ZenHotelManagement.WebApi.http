@@ -1,0 +1,6 @@
+@ZenHotelManagement.WebApi_HostAddress = http://localhost:5161
+
+GET {{ZenHotelManagement.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

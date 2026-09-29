@@ -1,0 +1,571 @@
+﻿@model ZenHotelManagement.WebApp.Models.ViewModel.PagedList<ZenHotelManagement.WebApp.Models.Customer>
+@using ZenHotelManagement.WebApp.Utilities
+
+@{
+    ViewData["Title"] = "";
+    ViewData["ActiveTab"] = "Customers";
+    
+    var totalRegisteredCustomers = ViewBag.TotalRegisteredCustomers ?? 0;
+    var totalCheckedInCustomers = ViewBag.TotalCheckedInCustomers ?? 0;
+    var totalConfirmedCustomers = ViewBag.TotalConfirmedCustomers ?? 0;
+}
+
+@Html.AntiForgeryToken()
+
+@{
+    // Add custom badge styles
+    Html.Raw(BookingStatusBadge.GenerateBadgeStyles());
+}
+
+
+<script src="~/js/notification.js"></script>
+
+<!-- Stats Section -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="total">
+            <div class="card-body">
+                <div class="d-flex flex-column">                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-people-fill me-2 text-primary"></i>Total Registered Customers
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@totalRegisteredCustomers</h3>
+                        <small class="text-muted">registered</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="active">
+            <div class="card-body">
+                <div class="d-flex flex-column">                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-person-check-fill me-2 text-success"></i>Total Checked-in Customers
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@totalCheckedInCustomers</h3>
+                        <small class="text-muted">currently checked-in</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card" data-type="bookings">
+            <div class="card-body">
+                <div class="d-flex flex-column">                    <h6 class="text-muted mb-2">
+                        <i class="bi bi-calendar-check-fill me-2 text-info"></i>Total Confirmed Customers
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <h3 class="mb-0 me-2">@totalConfirmedCustomers</h3>
+                        <small class="text-muted">future check-in</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card filter-card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-funnel-fill me-2"></i>Filter Customers
+            </h5>
+            <a href="@Url.Action("Create", "Customer")" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add New Customer
+            </a>
+        </div>
+        
+        <form method="get" asp-action="Index">
+            <div class="row g-3">                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="SearchTerm" class="form-label">
+                            <i class="bi bi-search me-2"></i>Search Customers
+                        </label>
+                        <div class="search-input-group input-group">
+                            <span class="input-group-text border-end-0 bg-transparent">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" id="SearchTerm" name="SearchTerm" class="form-control border-start-0"
+                                   value="@(ViewBag.CurrentFilter?.SearchTerm)" placeholder="Search by name, ID, or mobile...">
+                        </div>
+                    </div>
+                </div>                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="Gender" class="form-label">Gender:</label>
+                        <select id="Gender" name="Gender" class="form-select">
+                            <option value="">All Genders</option>
+                            @foreach (var gender in ViewBag.Genders ?? new List<string>())
+                            {
+                                <option value="@gender" selected="@(gender == ViewBag.CurrentFilter?.Gender)">@gender</option>
+                            }                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="Status" class="form-label">Status:</label>
+                        <select id="Status" name="Status" class="form-select">
+                            <option value="">All Statuses</option>
+                            @foreach (var status in ViewBag.CustomerStatuses ?? new List<string>())
+                            {
+                                <option value="@status" selected="@(status == ViewBag.CurrentFilter?.Status)">@status</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="IsCurrent" class="form-label">Active:</label>
+                        <select id="IsCurrent" name="IsCurrent" class="form-select">
+                            <option value="">All</option>
+                            <option value="true" selected="@(ViewBag.CurrentFilter?.IsCurrent == true)">Active</option>
+                            <option value="false" selected="@(ViewBag.CurrentFilter?.IsCurrent == false)">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Alerts Section -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card shadow-sm">
+    <div class="card-header border-0 bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-muted">
+                <i class="bi bi-people me-2"></i>Customer Directory
+            </h5>
+            <div class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Showing @Model.Items.Count() of @Model.TotalCount customers
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Items.Any())
+        {
+            <div class="empty-state text-center py-5">
+                <i class="bi bi-people" style="font-size: 3rem; color: #dee2e6;"></i>
+                <h5 class="mt-3">No customers found</h5>
+                <p class="text-muted">Try adjusting your search or filter criteria</p>
+                <a asp-action="Create" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Customer
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0 text-muted fw-normal">Customer Details</th>
+                            <th class="border-0 text-muted fw-normal">Contact & Location</th>
+                            <th class="border-0 text-muted fw-normal">Bookings Summary</th>
+                            <th class="border-0 text-muted fw-normal">Financial</th>
+                            <th class="border-0 text-muted fw-normal">Status</th>
+                            <th class="border-0 text-muted fw-normal text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>                        @foreach (var customer in Model.Items)
+                        {                            var totalRoomRevenue = customer.RoomBookings?.Sum(b => b.TotalAmount ?? 0) ?? 0;
+                            var totalCabRevenue = customer.CabBookings?.Sum(b => b.Fare) ?? 0;
+                            var totalRevenue = totalRoomRevenue + totalCabRevenue;
+                            var totalPaidRoom = customer.RoomBookings?.Sum(b => b.AmountPaid) ?? 0;
+                            var totalPaidCab = customer.CabBookings?.Sum(b => b.Fare) ?? 0;
+                            var totalPending = totalRevenue - (totalPaidRoom + totalPaidCab);                            var activeBookings = (customer.RoomBookings?.Count(b => b.BookingStatus != "Completed" && b.BookingStatus != "Cancelled") ?? 0) + 
+                                               (customer.CabBookings?.Count(b => b.IsRideCompleted != true) ?? 0);
+                            
+                            <tr class="align-middle" data-customer='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+                                name = customer.Name,
+                                customerId = customer.CustomerId,
+                                mobile = customer.MobileNo ?? "",
+                                country = customer.Country ?? "",
+                                address = customer.Address ?? "",
+                                totalRevenue = totalRevenue,
+                                pendingAmount = totalPending,
+                                activeBookings = activeBookings
+                            }))'>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">@customer.Name</h6>
+                                            <small class="text-muted">ID: @customer.CustomerId</small>
+                                            <br>
+                                            <small class="text-muted">@(customer.Gender?.ToLower() == "male" ? "Male" : customer.Gender?.ToLower() == "female" ? "Female" : customer.Gender)</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        @if (!string.IsNullOrEmpty(customer.MobileNo))
+                                        {
+                                            <div class="mb-1">
+                                                <i class="bi bi-telephone-fill me-1 text-primary"></i>
+                                                <small>@customer.MobileNo</small>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(customer.Country))
+                                        {
+                                            <div class="mb-1">
+                                                <i class="bi bi-geo-alt-fill me-1 text-info"></i>
+                                                <small>@customer.Country</small>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(customer.Address))
+                                        {
+                                            <div>
+                                                <i class="bi bi-house-fill me-1 text-muted"></i>
+                                                <small class="text-truncate d-inline-block" style="max-width: 150px;" title="@customer.Address">@customer.Address</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var roomCount = customer.RoomBookings?.Count ?? 0;
+                                        var cabCount = customer.CabBookings?.Count ?? 0;
+                                        var totalBookings = roomCount + cabCount;
+                                        var activeRoomBookings = customer.RoomBookings?.Count(rb => 
+                                            string.Equals(rb.BookingStatus, "Checked In", StringComparison.OrdinalIgnoreCase) ||
+                                            string.Equals(rb.BookingStatus, "Confirmed", StringComparison.OrdinalIgnoreCase)) ?? 0;
+                                    }
+                                    <div class="booking-summary">
+                                        @if (totalBookings > 0)
+                                        {
+                                            <div class="mb-1">
+                                                <i class="bi bi-door-open me-1 text-success"></i>
+                                                <small>@roomCount room@(roomCount != 1 ? "s" : "")</small>
+                                                @if (activeRoomBookings > 0)
+                                                {
+                                                    <span class="badge bg-success-subtle text-success ms-1">@activeRoomBookings active</span>
+                                                }
+                                            </div>
+                                            @if (cabCount > 0)
+                                            {
+                                                <div class="mb-1">
+                                                    <i class="bi bi-car-front me-1 text-warning"></i>
+                                                    <small>@cabCount cab@(cabCount != 1 ? "s" : "")</small>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">No bookings</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>                                    @{
+                                        var totalAmount = customer.RoomBookings?.Sum(rb => rb.TotalAmount ?? 0) ?? 0;
+                                        var totalPaid = customer.RoomBookings?.Sum(rb => rb.AmountPaid) ?? 0;
+                                        var cabTotal = customer.CabBookings?.Sum(cb => cb.Fare) ?? 0;
+                                        var grandTotal = totalAmount + cabTotal;                                        // Only calculate pending for non-completed bookings
+                                        var pendingFromActiveBookings = customer.RoomBookings?
+                                            .Where(rb => rb.BookingStatus != "Completed" && 
+                                                        rb.BookingStatus != "Cancelled" && 
+                                                        rb.BookingStatus != "Checked Out" && 
+                                                        rb.BookingStatus != "Checked-Out")
+                                            .Sum(rb => (rb.TotalAmount ?? 0) - rb.AmountPaid) ?? 0;
+                                        var pending = pendingFromActiveBookings;
+                                    }
+                                    <div class="financial-summary">
+                                        @if (grandTotal > 0)
+                                        {
+                                            <div class="mb-1">
+                                                <small class="text-muted">Total:</small>
+                                                <span class="fw-medium">₹@grandTotal.ToString("N0")</span>
+                                            </div>
+                                            @if (pending > 0)
+                                            {
+                                                <div>
+                                                    <small class="text-danger">Due: ₹@pending.ToString("N0")</small>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <small class="text-success">Paid in full</small>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">No charges</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var customerStatus = ViewBag.GetCustomerStatus?.Invoke(customer) ?? "No Bookings";
+                                    }
+                                    @await Html.PartialAsync("_StatusBadge", null, new ViewDataDictionary(ViewData) 
+                                    { 
+                                        ["Status"] = customerStatus,
+                                        ["BadgeType"] = "customer",
+                                        ["Size"] = "sm"
+                                    })
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="@Url.Action("Details", "Customer", new { customerId = customer.CustomerId })" 
+                                           class="btn btn-outline-primary btn-sm" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("Edit", "Customer", new { customerId = customer.CustomerId })" 
+                                           class="btn btn-outline-secondary btn-sm" title="Edit Customer">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>                </table>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4 px-3 pb-3">
+                    <div class="text-muted">
+                        Page @Model.PageNumber of @Model.TotalPages
+                    </div>
+                    <nav>
+                        <ul class="pagination">                            @if (Model.HasPreviousPage)
+                            {                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="1"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-gender="@ViewBag.CurrentFilter?.Gender"
+                                       asp-route-status="@ViewBag.CurrentFilter?.Status"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-gender="@ViewBag.CurrentFilter?.Gender"
+                                       asp-route-status="@ViewBag.CurrentFilter?.Status"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item active">
+                                <span class="page-link">@Model.PageNumber</span>
+                            </li>                            @if (Model.HasNextPage)
+                            {                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-gender="@ViewBag.CurrentFilter?.Gender"
+                                       asp-route-status="@ViewBag.CurrentFilter?.Status"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageNumber="@Model.TotalPages"
+                                       asp-route-searchTerm="@ViewBag.CurrentFilter?.SearchTerm"
+                                       asp-route-gender="@ViewBag.CurrentFilter?.Gender"
+                                       asp-route-status="@ViewBag.CurrentFilter?.Status"
+                                       asp-route-isCurrent="@ViewBag.CurrentFilter?.IsCurrent">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.stats-card {
+    border: none;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+}
+
+.filter-card {
+    border: none;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.table th {
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 1rem 0.75rem;
+}
+
+.table td {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #f1f3f4;
+}
+
+.btn-group-sm .btn {
+    padding: 0.375rem 0.5rem;
+}
+</style>
+
+<script>    // Auto-hide only dismissible alerts (temporary notifications) after 5 seconds
+    setTimeout(function() {
+        const dismissibleAlerts = document.querySelectorAll('.alert.alert-dismissible');
+        dismissibleAlerts.forEach(function(alert) {
+            // Only hide if it's a success or info alert (not error/warning which should stay visible)
+            if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        });
+    }, 5000);    // Auto-submit form on filter changes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips if any
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });    // Customer filtering functionality
+    function filterCustomers() {
+        const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        const rows = document.querySelectorAll('tbody tr[data-customer]');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            let showRow = true;
+            const customerData = JSON.parse(row.getAttribute('data-customer'));
+            
+            // Text search filter
+            if (searchTerm) {
+                const searchableText = [
+                    customerData.name,
+                    customerData.customerId,
+                    customerData.mobile,
+                    customerData.country,
+                    customerData.address
+                ].join(' ').toLowerCase();
+                
+                if (!searchableText.includes(searchTerm)) {
+                    showRow = false;
+                }
+            }
+            
+            // Status filter
+            if (statusFilter && showRow) {
+                switch (statusFilter) {
+                    case 'active':
+                        if (customerData.activeBookings === 0) showRow = false;
+                        break;
+                    case 'completed':
+                        if (customerData.activeBookings > 0) showRow = false;
+                        break;
+                    case 'pending':
+                        if (customerData.pendingAmount <= 0) showRow = false;
+                        break;
+                }
+            }
+            
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+        
+        // Update results count
+        updateResultsCount(visibleCount, rows.length);
+    }
+    
+    function clearFilters() {
+        document.getElementById('customerSearch').value = '';
+        document.getElementById('statusFilter').value = '';
+        filterCustomers();
+    }
+    
+    function updateResultsCount(visible, total) {
+        let resultsText = document.getElementById('resultsCount');
+        if (!resultsText) {
+            resultsText = document.createElement('small');
+            resultsText.id = 'resultsCount';
+            resultsText.className = 'text-muted ms-2';
+            document.querySelector('.table-responsive').insertBefore(resultsText, document.querySelector('table'));
+        }
+        
+        if (visible === total) {
+            resultsText.textContent = `Showing all ${total} customers`;
+        } else {
+            resultsText.textContent = `Showing ${visible} of ${total} customers`;
+        }
+    }
+        const filterForm = document.querySelector('form[method="get"]');
+        if (!filterForm) return;
+
+        const filterSelects = filterForm.querySelectorAll('select');
+        const searchInput = document.getElementById('SearchTerm');
+
+        filterSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                filterForm.submit();
+            });
+        });
+
+        // Debounce search input
+        let searchTimeout;
+        searchInput?.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 500);
+        });
+    });
+</script>
